@@ -1,5 +1,3 @@
-package com.example.student.piano;
-
 import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
