@@ -1,0 +1,61 @@
+public class Plotter {
+
+    private String[] coordinates;
+    private int currentX = 0;
+    private int currentY = 0;
+
+    public Plotter(String data){
+        this.coordinates = data.split("\n");
+    }
+
+    public int getX(int count){
+        String coordDeci = coordinates[count].replace(".", "");
+        String coord = coordDeci.split(",")[0];
+        String decimal = "";
+        if(coord.length() < 7){
+            for(int i = 0; i < 7 - coord.length(); i++) {
+                decimal = coord.concat("0");
+            }
+        } else if(coord.length()>7) {
+            decimal = coord.substring(0, coord.length()-1);
+        }
+        long newX = Long.parseLong(decimal);
+        System.out.println("x: " + newX);
+        long x;
+        if(count==0){
+            x = (newX - currentX);
+        } else {
+            x = (newX - currentX);
+        }
+        currentX = (int) newX;
+        return (int) x;
+    }
+
+    public long getY(int count){
+        String coordDeci = coordinates[count].replace(".", "");
+        String coord = coordDeci.split(",")[1];
+        String decimal = "";
+        if(coord.length() < 6){
+            for(int i = 0; i < 6 - coord.length(); i++) {
+                decimal = coord.concat("0");
+            }
+        } else if(coord.length() > 6) {
+            int del = coord.length() - 6;
+            decimal = coord.substring(0, coord.length()-del);
+        }
+        long newY = Long.parseLong(decimal);
+        System.out.println("y: " + newY);
+        long y;
+        if(count==0){
+            y = (newY - currentY);
+        } else {
+            y = (newY - currentY);
+        }
+        currentY = (int) newY;
+        return y;
+    }
+
+    public int getLength(){
+        return coordinates.length;
+    }
+}
