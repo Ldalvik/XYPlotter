@@ -1,7 +1,4 @@
-#include <Servo.h>
 #include <SoftwareSerial.h>
-
-SoftwareSerial blu(4, 3);
 
 int16_t deltaX;
 int16_t deltaY;
@@ -24,15 +21,27 @@ String moveType = "";
 bool shouldMove = false;
 int xcoord;
 int ycoord;
+int delayCount;
+#define yDirection 6
+#define xDirection 8
+#define yStep 5
+#define xStep 7
+#define xLimit 0
+#define yLimit 1
+#define tap 2
+#define rx 4
+#define tx 3
+
+SoftwareSerial blu(rx, tx);
 
 void setup() {
-  pinMode(6, OUTPUT);
-  pinMode(7, OUTPUT);
-  pinMode(8, OUTPUT);
-  pinMode(9, OUTPUT);
-  pinMode(6, INPUT);
-  pinMode(7, INPUT);
-  pinMode(8, INPUT);
+  pinMode(yDirection, OUTPUT);
+  pinMode(yStep, OUTPUT);
+  pinMode(xDirection, OUTPUT);
+  pinMode(xStep, OUTPUT);
+  pinMode(xLimit, INPUT);
+  pinMode(yLimit, INPUT);
+  pinMode(tap, OUTPUT);
   Serial.begin(9600);
   blu.begin(9600);
 }
@@ -45,8 +54,13 @@ void loop() {
       int x = getValue(content, ',', 0).toInt();
       int y = getValue(content, ',', 1).toInt();
       if (content.startsWith("B")) {
-        blu.print(content);
-        blu.print("/");
+        //delayCount++;
+        //if (delayCount > 10) {
+          blu.print(content);
+          blu.print("/");
+          delay(10);
+          //delayCount = 0;
+        //}
       } else {
         alg(x, y);
       }
@@ -78,10 +92,10 @@ void loop() {
     phone(moveType);
   }
 
-  if (digitalRead(5) == HIGH) {
+  if (digitalRead(xLimit) == HIGH) {
 
   }
-  if (digitalRead(6) == HIGH) {
+  if (digitalRead(yLimit) == HIGH) {
 
   }
 }
@@ -116,7 +130,7 @@ void phone(String data) {
   if (data == "downLeft") {
     moveX(0);
     moveY(0);
-  } 
+  }
   if (data == "tap") {
     Serial.print(xcoord);
     Serial.println(ycoord);
@@ -124,31 +138,31 @@ void phone(String data) {
 }
 
 void moveX(int dir) {
-  digitalWrite(8, dir);
-  digitalWrite(7, HIGH);
+  digitalWrite(xDirection, dir);
+  digitalWrite(xStep, HIGH);
   delayMicroseconds(100);
-  digitalWrite(7, LOW);
+  digitalWrite(xStep, LOW);
   delayMicroseconds(100);
   if (dir) {
     xcoord++;
   } else {
     xcoord--;
   }
-  Serial.println(ycoord);
+  //Serial.println(ycoord);
 }
 
 void moveY(int dir) {
-  digitalWrite(6, dir);
-  digitalWrite(5, HIGH);
+  digitalWrite(yDirection, dir);
+  digitalWrite(yStep, HIGH);
   delayMicroseconds(10);
-  digitalWrite(5, LOW);
+  digitalWrite(yStep, LOW);
   delayMicroseconds(100);
   if (dir) {
     ycoord++;
   } else {
     ycoord--;
   }
-  Serial.println(ycoord);
+  //Serial.println(ycoord);
 }
 
 void alg(int x, int y)
@@ -158,7 +172,7 @@ void alg(int x, int y)
 
   if (deltaX <= 0) dirX = POS; else dirX = NEG;
 
-  if (deltaY <= 0) dirY = NEG; else dirY = POS;
+  if (deltaY <= 0) dirY = POS; else dirY = NEG;
 
   if (abs(deltaX) >= abs(deltaY)) {
     endCnt = abs(x);
@@ -192,9 +206,9 @@ void alg(int x, int y)
     }
   }
   Serial.print("5");
-  blu.print(corX);
-  blu.print(":");
-  blu.println(corY);
+  //blu.print(corX);
+  //blu.print(":");
+  //blu.println(corY);
   corX = 0;
   corY = 0;
 }
