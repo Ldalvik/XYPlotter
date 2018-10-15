@@ -34,13 +34,15 @@ class Main {
                 while (port.bytesAvailable() == 0)
                     Thread.sleep(20);
                 char charRead = port.read();
-                System.out.println("rec: " + charRead);
-                if (charRead == '5') {
+                //System.out.println("rec: " + charRead);
+                if (charRead == '5' && count < p.getLength()) {
                     String xy = p.getX(count) + "," + p.getY(count) + "/";
                     System.out.println("(" + count + ")" + xy);
                     port.send(xy);
                     port.send("B" + count + ":" + p.getLength() + "/");
                     count++;
+                } else {
+                    port.send("BDone!/");
                 }
             }
         } catch (Exception e) {
