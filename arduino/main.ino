@@ -22,15 +22,26 @@ bool shouldMove = false;
 int xcoord;
 int ycoord;
 int delayCount;
-#define yDirection 6
-#define xDirection 8
-#define yStep 5
-#define xStep 7
-#define xLimit 0
-#define yLimit 1
-#define tap 2
-#define rx 4
-#define tx 3
+int isTapped;
+int start = true;
+int X_DELAY = 20;
+int Y_DELAY = 20;
+int TAP_DELAY = 40;
+int TAP_LOOP_HIGH = 250;
+int TAP_LOOP_LOW = 250;
+int TAP_ONE = 0;
+int TAP_TWO = 1;
+
+#define yDirection 12
+#define yStep 13
+#define xDirection 10
+#define xStep 11
+#define xLimit 6
+#define yLimit 7
+#define tapDirection 8
+#define tapStep 9
+#define rx 5
+#define tx 4
 
 SoftwareSerial blu(rx, tx);
 
@@ -39,9 +50,10 @@ void setup() {
   pinMode(yStep, OUTPUT);
   pinMode(xDirection, OUTPUT);
   pinMode(xStep, OUTPUT);
+  pinMode(tapDirection, OUTPUT);
+  pinMode(tapStep, OUTPUT);
   pinMode(xLimit, INPUT);
   pinMode(yLimit, INPUT);
-  pinMode(tap, OUTPUT);
   Serial.begin(9600);
   blu.begin(9600);
 }
@@ -56,10 +68,10 @@ void loop() {
       if (content.startsWith("B")) {
         //delayCount++;
         //if (delayCount > 10) {
-          blu.print(content);
-          blu.print("/");
-          delay(10);
-          //delayCount = 0;
+        blu.print(content);
+        blu.print("/");
+        delay(10);
+        //delayCount = 0;
         //}
       } else {
         alg(x, y);
@@ -75,8 +87,18 @@ void loop() {
     char data = (char)blu.read();
     if (data == '/') {
       Serial.println(content);
-      if (String(content) == "stop") {
+      String cmd = String(content);
+      if (cmd == "stop") {
         shouldMove = false;
+        if (isTapped) {
+          tap(TAP_TWO);
+          isTapped = false;
+        }
+      } else if (cmd.startsWith("EDIT:")) {
+        cmd.remove(0, 5);
+        String command = getValue(cmd, '=', 0);
+        int value = getValue(cmd, '=', 1).toInt();
+        changeSettings(command, value);
       } else {
         shouldMove = true;
         moveType = String(content);
@@ -131,18 +153,19 @@ void phone(String data) {
     moveX(0);
     moveY(0);
   }
-  if (data == "tap") {
-    Serial.print(xcoord);
-    Serial.println(ycoord);
+  if (data == "tap" && isTapped == false) {
+    tap(TAP_ONE);
+    isTapped = true;
   }
+
 }
 
 void moveX(int dir) {
   digitalWrite(xDirection, dir);
   digitalWrite(xStep, HIGH);
-  delayMicroseconds(100);
+  delayMicroseconds(X_DELAY);
   digitalWrite(xStep, LOW);
-  delayMicroseconds(100);
+  delayMicroseconds(X_DELAY);
   if (dir) {
     xcoord++;
   } else {
@@ -151,12 +174,36 @@ void moveX(int dir) {
   //Serial.println(ycoord);
 }
 
+void tap(int dir) {
+  digitalWrite(tapDirection, dir);
+  if (dir) {
+    for (int i = 0; i < TAP_LOOP_HIGH; i++) {
+      digitalWrite(tapStep, HIGH);
+      delayMicroseconds(TAP_DELAY);
+      digitalWrite(tapStep, LOW);
+      delayMicroseconds(TAP_DELAY);
+    }
+  } else {
+    for (int i = 0; i < TAP_LOOP_LOW; i++) {
+      digitalWrite(tapStep, HIGH);
+      delayMicroseconds(TAP_DELAY);
+      digitalWrite(tapStep, LOW);
+      delayMicroseconds(TAP_DELAY);
+    }
+  }
+  if (dir) {
+    xcoord++;
+  } else {
+    xcoord--;
+  }
+  //Serial.println(ycoord);
+}
 void moveY(int dir) {
   digitalWrite(yDirection, dir);
   digitalWrite(yStep, HIGH);
-  delayMicroseconds(10);
+  delayMicroseconds(Y_DELAY);
   digitalWrite(yStep, LOW);
-  delayMicroseconds(100);
+  delayMicroseconds(Y_DELAY);
   if (dir) {
     ycoord++;
   } else {
@@ -205,6 +252,10 @@ void alg(int x, int y)
       }
     }
   }
+  if (start) {
+    tap(TAP_ONE);
+    tap(TAP_TWO);
+  }
   Serial.print("5");
   //blu.print(corX);
   //blu.print(":");
@@ -227,4 +278,54 @@ String getValue(String data, char separator, int index) {
   }
 
   return found > index ? data.substring(strIndex[0], strIndex[1]) : "";
+}
+
+void changeSettings(String cmd, int value) {
+  if (cmd == "X_DELAY") {
+    X_DELAY = value;
+    Serial.print("X_DELAY:");
+    Serial.println(X_DELAY);
+  }
+
+  if (cmd == "Y_DELAY") {
+    Y_DELAY = value;
+    Serial.print("Y_DELAY:");
+    Serial.println(Y_DELAY);
+  }
+
+  if (cmd == "TAP_DELAY") {
+    TAP_DELAY = value;
+    Serial.print("TAP_DELAY:");
+    Serial.println(TAP_DELAY);
+  }
+
+  if (cmd == "TAP_LOOP_HIGH") {
+    TAP_LOOP_HIGH = value;
+    Serial.print("TAP_LOOP_HIGH:");
+    Serial.println(TAP_LOOP_HIGH);
+  }
+
+  if (cmd == "TAP_LOOP_LOW") {
+    TAP_LOOP_LOW = value;
+    Serial.print("TAP_LOOP_LOW:");
+    Serial.println(TAP_LOOP_LOW);
+  }
+
+  if (cmd == "REVERSE_TAP") {
+    if (TAP_ONE) {
+      TAP_ONE = 0;
+      TAP_TWO = 1;
+      Serial.print("TAP_ONE:");
+      Serial.println(TAP_ONE);
+      Serial.print("TAP_TWO:");
+      Serial.println(TAP_TWO);
+    } else {
+      TAP_ONE = 1;
+      TAP_TWO = 0;
+      Serial.print("TAP_ONE:");
+      Serial.println(TAP_ONE);
+      Serial.print("TAP_TWO:");
+      Serial.println(TAP_TWO);
+    }
+  }
 }
