@@ -4,7 +4,7 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:layout_gravity="center"
-    android:gravity="center"
+    android:gravity="top|center"
     android:orientation="vertical">
 
     <TextView
@@ -12,7 +12,23 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
+        android:layout_marginBottom="250px"
+        android:layout_marginTop="250px"
         android:layout_weight="0"
         android:gravity="center" />
+
+    <Button
+        android:onClick="reconnect"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="0"
+        android:text="Reconnect" />
+
+    <Button
+        android:onClick="disconnect"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="0"
+        android:text="Disconnect" />
 
 </LinearLayout>
