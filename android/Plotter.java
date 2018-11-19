@@ -14,7 +14,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
-
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.UUID;
@@ -28,6 +27,7 @@ public class Plotter extends AppCompatActivity {
     StringBuilder sb = new StringBuilder();
     Utils utils;
     BluetoothDevice device;
+    boolean isConnected;
 
     @SuppressLint("HandlerLeak")
     @Override
@@ -39,46 +39,33 @@ public class Plotter extends AppCompatActivity {
         device = bluetoothAdapter.getRemoteDevice("00:06:66:7D:80:1A");
         utils = new Utils(this);
 
-        try {
-            socket = connect(device);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        try {
-            socket.connect();
-            utils.makeToast("Connected to device" + device.getName());
-        } catch (IOException e) {
-            e.printStackTrace();
+        connect();
+
+        for(int i = 0; i<5; i++){
+            if(!isConnected){
+                disconnect();
+                connect();
+            } else {
+                break;
+            }
         }
 
-        handler = new Handler() {
-            public void handleMessage(android.os.Message msg) {
-                switch (msg.what) {
-                    case 1:
-                        byte[] readBuf = (byte[]) msg.obj;
-                        String strIncom = new String(readBuf, 0, msg.arg1);
-                        sb.append(strIncom);
-                        int endOfLineIndex = sb.indexOf("/");
-                        if (endOfLineIndex > 0) {
-                            String data = sb.substring(0, endOfLineIndex);
-                            sb.delete(0, sb.length());
-                            if(data.startsWith("B")){
-                                setText(data.replace(":", "/").substring(1, data.length()), false);
-                            } else if(data.contains("Done")){
-                                setText(data.substring(1, data.length()), true);
-                                Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                                    v.vibrate(VibrationEffect.createOneShot(1000,VibrationEffect.DEFAULT_AMPLITUDE));
-                                } else {
-                                    v.vibrate(1000);
-                                }
-                            }
-                        }
-                        break;
-                }
-            }
-        };
-        bluetoothThread = new BluetoothThread(socket, handler);
+
+        bluetoothThread = new BluetoothThread(socket, BluetoothThread.handle("/", new BluetoothThread.BluetoothClass() {
+            @Override
+            public void onReceived(String data) {
+                if(data.startsWith("B")){
+                    setText(data.replace(":", "/").substring(1, data.length()), false);
+                } else if(data.contains("Done")){
+                    setText(data.substring(1, data.length()), true);
+                    Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        v.vibrate(VibrationEffect.createOneShot(1000,VibrationEffect.DEFAULT_AMPLITUDE));
+                    } else {
+                        v.vibrate(1000);
+                    }
+                }            }
+        }));
         bluetoothThread.start();
     }
 
@@ -131,6 +118,36 @@ public class Plotter extends AppCompatActivity {
     }
 
     public void disconnect(View v){
+        try {
+            socket.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    public void connect(){
+        try {
+            socket = connect(device);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        try {
+            socket.connect();
+            utils.makeToast("Connected to device" + device.getName());
+            isConnected = true;
+        } catch (IOException e) {
+            e.printStackTrace();
+            isConnected = false;
+        }
+        bluetoothThread = new BluetoothThread(socket, BluetoothThread.handle("/", new BluetoothThread.BluetoothClass() {
+            @Override
+            public void onReceived(String data) {
+                utils.makeToast(data);
+            }
+        }));
+        bluetoothThread.start();
+    }
+
+    public void disconnect(){
         try {
             socket.close();
         } catch (IOException e) {
