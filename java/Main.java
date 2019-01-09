@@ -12,13 +12,17 @@ class Main {
     public static void main(String[] args) throws Exception {
 
         Port port = new Port("COM24");
-
-        String data = parseSvg(readSvg("ok.svg"), "0.875");
-        System.out.println(data);
-        Plotter p = new Plotter(data);
-        System.out.println("-----End of SVG coordinates-----");
-
-        //String xy1 = p.getX(0) + "," + p.getY(0) + "/";
+        SvgParser svg = new SvgParser("ok.svg");
+        Plotter p = new Plotter(svg, 1);
+        p.calculate();
+        int length = svg.getLength();
+        System.out.println("Length=" + length);
+        System.out.println(p.highestX);
+        System.out.println(p.lowestX);
+        System.out.println(p.highestY);
+        System.out.println(p.lowestY);
+        //String xy1 = p.getX(0) + "," + p.getY(
+        // 0) + "/";
         //String xy2 = p.getX(1) + "," + p.getY(1) + "/";
         //System.out.println(xy1);
         //System.out.println(xy2);
@@ -39,9 +43,9 @@ class Main {
                     Thread.sleep(20);
                 char charRead = port.read();
                 //System.out.println("rec: " + charRead);
-                if (charRead == '5' && count < p.getLength()) {
+                if (charRead == '5' && count < svg.getLength()) {
                     String xy = p.getX(count) + "," + p.getY(count);
-                    System.out.println("(" + count + "/" + p.getLength() + ")" + xy);
+                    System.out.println("(" + count + "/" + svg.getLength() + ")" + xy);
                     port.send(xy + "/");
                     //port.send("B" + count + ":" + p.getLength() + "/");
                     count++;
@@ -56,7 +60,7 @@ class Main {
     }
 
     private static String removeTillWord(String input, String word) {
-        return input.substring(input.indexOf(word));
+        return input.substring(input.indexOf(word) + word.length());
     }
 
     public static String removeFromTo(String input, String from, String to){
@@ -83,11 +87,14 @@ class Main {
 
     private static String parseSvg(String data, String radius) {
         String s1 = removeTillWord(data, "<circle");
-        String s2 = replace(s1, "<circle cx=\"", "");
-        String s3 = replace(s2, "\" cy=\"", ",");
-        String s4 = replace(s3, "\" r=\"" + radius + "\" style=\"fill:none;stroke:black;stroke-width:2;\"/>", "");
-        String s5 = replace(s4, "</g></g></svg>", "");
-        return s5.trim();
+        return s1.trim();
     }
 
+    private static String parseTspSvg(String data, String radius) {
+        /*String s1 = removeTillWord(data, "\"M");
+        String s2 = replace(s1, "</g></g></svg>", "");
+        String s3 = replace(s2, "\" />", "");*/
+        String s4 = replace(data, ",,", ",");
+        return s4.trim();
+    }
 }
