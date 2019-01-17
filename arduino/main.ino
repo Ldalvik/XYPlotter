@@ -23,12 +23,12 @@ int xcoord;
 int ycoord;
 int delayCount;
 int isTapped;
-int start = true;
-int X_DELAY = 20;
-int Y_DELAY = 20;
-int TAP_DELAY = 40;
-int TAP_LOOP_HIGH = 250;
-int TAP_LOOP_LOW = 250;
+int start = false;
+int X_DELAY = 100;
+int Y_DELAY = 100;
+int TAP_DELAY = 30;
+int TAP_LOOP_HIGH = 450;
+int TAP_LOOP_LOW = 450;
 int TAP_ONE = 0;
 int TAP_TWO = 1;
 
@@ -42,7 +42,6 @@ int TAP_TWO = 1;
 #define tapStep 9
 #define rx 5
 #define tx 4
-
 SoftwareSerial blu(rx, tx);
 
 void setup() {
@@ -56,6 +55,7 @@ void setup() {
   pinMode(yLimit, INPUT);
   Serial.begin(9600);
   blu.begin(9600);
+  homePen();
 }
 
 void loop() {
@@ -66,13 +66,10 @@ void loop() {
       int x = getValue(content, ',', 0).toInt();
       int y = getValue(content, ',', 1).toInt();
       if (content.startsWith("B")) {
-        //delayCount++;
-        //if (delayCount > 10) {
         blu.print(content);
         blu.print("/");
         delay(10);
-        //delayCount = 0;
-        //}
+        //Serial.print("5");
       } else {
         alg(x, y);
       }
@@ -115,9 +112,11 @@ void loop() {
   }
 
   if (digitalRead(xLimit) == HIGH) {
+    //Serial.println(digitalRead(xLimit));
 
   }
   if (digitalRead(yLimit) == HIGH) {
+    //Serial.println(digitalRead(yLimit));
 
   }
 }
@@ -157,10 +156,9 @@ void phone(String data) {
     tap(TAP_ONE);
     isTapped = true;
   }
-
 }
 
-void moveX(int dir) {
+void moveY(int dir) {
   digitalWrite(xDirection, dir);
   digitalWrite(xStep, HIGH);
   delayMicroseconds(X_DELAY);
@@ -174,15 +172,44 @@ void moveX(int dir) {
   //Serial.println(ycoord);
 }
 
+
+void homePen() {
+  digitalWrite(tapDirection, 1);
+  int steps = 0;
+  do {
+    digitalWrite(tapStep, HIGH);
+    delayMicroseconds(300);
+    digitalWrite(tapStep, LOW);
+    delayMicroseconds(300);
+    steps++;
+  } while (digitalRead(yLimit) == LOW);
+
+  /*digitalWrite(tapDirection, 0);
+    for (int i = 0; i < steps; i++) {
+    digitalWrite(tapStep, HIGH);
+    delayMicroseconds(300);
+    digitalWrite(tapStep, LOW);
+    delayMicroseconds(300);
+    }
+    digitalWrite(tapDirection, 0);
+    for (int i = 0; i < steps; i++) {
+    digitalWrite(tapStep, HIGH);
+    delayMicroseconds(100);
+    digitalWrite(tapStep, LOW);
+    delayMicroseconds(100);
+    }*/
+}
+
 void tap(int dir) {
   digitalWrite(tapDirection, dir);
   if (dir) {
     for (int i = 0; i < TAP_LOOP_HIGH; i++) {
+      //do {
       digitalWrite(tapStep, HIGH);
       delayMicroseconds(TAP_DELAY);
       digitalWrite(tapStep, LOW);
       delayMicroseconds(TAP_DELAY);
-    }
+    } //while (digitalRead(yLimit) == LOW);
   } else {
     for (int i = 0; i < TAP_LOOP_LOW; i++) {
       digitalWrite(tapStep, HIGH);
@@ -198,7 +225,7 @@ void tap(int dir) {
   }
   //Serial.println(ycoord);
 }
-void moveY(int dir) {
+void moveX(int dir) {
   digitalWrite(yDirection, dir);
   digitalWrite(yStep, HIGH);
   delayMicroseconds(Y_DELAY);
