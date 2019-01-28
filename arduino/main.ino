@@ -23,12 +23,12 @@ int xcoord;
 int ycoord;
 int delayCount;
 int isTapped;
-int start = false;
-int X_DELAY = 100;
-int Y_DELAY = 100;
-int TAP_DELAY = 30;
-int TAP_LOOP_HIGH = 450;
-int TAP_LOOP_LOW = 450;
+int start = true;
+int X_DELAY = 50;
+int Y_DELAY = 50;
+int TAP_DELAY = 20;
+int TAP_LOOP_HIGH = 400;
+int TAP_LOOP_LOW = 400;
 int TAP_ONE = 0;
 int TAP_TWO = 1;
 
@@ -53,7 +53,7 @@ void setup() {
   pinMode(tapStep, OUTPUT);
   pinMode(xLimit, INPUT);
   pinMode(yLimit, INPUT);
-  Serial.begin(9600);
+  Serial.begin(115200);
   blu.begin(9600);
   homePen();
 }
@@ -69,7 +69,6 @@ void loop() {
         blu.print(content);
         blu.print("/");
         delay(10);
-        //Serial.print("5");
       } else {
         alg(x, y);
       }
@@ -239,44 +238,22 @@ void moveX(int dir) {
   //Serial.println(ycoord);
 }
 
-void alg(int x, int y)
+
+void alg(int xx, int yy)
 {
-  deltaX = x;
-  deltaY = y;
-
-  if (deltaX <= 0) dirX = POS; else dirX = NEG;
-
-  if (deltaY <= 0) dirY = POS; else dirY = NEG;
-
-  if (abs(deltaX) >= abs(deltaY)) {
-    endCnt = abs(x);
-    delta1 = deltaX;
-    delta2 = deltaY;
-  } else {
-    endCnt = abs(y);
-    delta1 = deltaY;
-    delta2 = deltaX;
+  if (xx <= 0) dirX = NEG; else dirX = POS;
+  if (yy <= 0) dirY = POS; else dirY = NEG;
+  int x = abs(xx);
+  int y = abs(yy);
+  if (x != 0) {
+    for (int i = 0; i < x; i++) {
+      moveX(dirX);
+    }
   }
 
-  for (int z = 0; z < endCnt; z++) {
-    if (abs(deltaX) >= abs(deltaY)) {
-      moveX(dirX);
-      corX++;
-    } else {
+  if (y != 0) {
+    for (int i = 0; i < y; i++) {
       moveY(dirY);
-      corY++;
-    }
-
-    error = abs(error + abs(delta2));
-    if ((2 * error) >= abs(delta1)) {
-      error = error - abs(delta1);
-      if (abs(deltaX) >= abs(deltaY)) {
-        moveY(dirY);
-        corY++;
-      } else {
-        moveX(dirX);
-        corX++;
-      }
     }
   }
   if (start) {
@@ -284,11 +261,6 @@ void alg(int x, int y)
     tap(TAP_TWO);
   }
   Serial.print("5");
-  //blu.print(corX);
-  //blu.print(":");
-  //blu.println(corY);
-  corX = 0;
-  corY = 0;
 }
 
 String getValue(String data, char separator, int index) {
