@@ -1,91 +1,90 @@
+import java.util.Arrays;
+
 public class Plotter {
     private long currentX = 0;
     private long currentY = 0;
-    private int multiply;
+    public float size;
+    public float factor = 1f;
     public long lowestY;
     public long highestY;
     public long lowestX;
     public long highestX;
+    public float xSize;
+    public float ySize;
     private SvgParser svg;
 
-    public Plotter(SvgParser svg, int multiply){
+    public Plotter(SvgParser svg, float size) {
         this.svg = svg;
-        this.multiply = multiply;
+        this.size = size;
     }
 
-    public long getX(int count){
-        String coord = svg.getX(count);
-        String a = coord.substring(coord.indexOf(".") + 1, coord.indexOf(".") + 2);
-        String decimal = coord.substring(0, coord.indexOf(".")).concat(a);
 
-        long newX = Long.parseLong(decimal);
+    public long getX(int count) {
+        long newX = (long) (svg.getX(count) * factor);
         long x;
-        if(count==0){
+        if(count == 0){
             x = 0;
         } else {
-            x = (newX - currentX) * multiply;
+            x = newX - currentX;
         }
-        /*String xValue = String.valueOf(x);
-        if(xValue.length() > 3){
-            x = Long.parseLong(String.valueOf(0));
-        }*/
         currentX = newX;
         return x;
     }
 
-    public long getY(int count){
-        String coord = svg.getY(count);
-        String a = coord.substring(coord.indexOf(".") + 1, coord.indexOf(".") + 2);
-        String decimal = coord.substring(0, coord.indexOf(".")).concat(a);
-        long newY = Long.parseLong(decimal);
+    public long getY(int count) {
+        long newY = (long) (svg.getY(count) * factor);
         long y;
-        if(count==0){
+        if(count == 0){
             y = 0;
         } else {
-            y = (newY - currentY) * multiply;
-            System.out.print(newY + " - " + currentY + " = " + y + "\t");
+            y = newY - currentY;
         }
-
-        /*String yValue = String.valueOf(y);
-        if(yValue.length() > 3){
-            y = Long.parseLong(String.valueOf(0));
-        }*/
         currentY = newY;
         return y;
     }
 
-    public void calculate(){
-        String xx1 = svg.getX(0);
-        String xx2 = xx1.substring(0, 4);
-        long xx = Long.parseLong(xx2);
+    public void calculate() {
+        lowestX = svg.getLowestX();
+        highestX =  svg.getHighestX();
+        lowestY = svg.getLowestY();
+        highestY = svg.getHighestY();
 
-        String yy1 = svg.getX(0);
-        String yy2 = yy1.substring(0, 3);
-        long yy = Long.parseLong(yy2);
-        lowestX = xx;
-        lowestY = yy;
+        xSize = highestX - lowestX;
+        ySize = highestY - lowestY;
 
-        for(int i = 0; i < svg.getLength(); i++) {
-            String x1 = svg.getX(i);
-            String x2 = x1.substring(0, 4);
-            long x = Long.parseLong(x2);
-
-            String y1 = svg.getX(i);
-            String y2 = y1.substring(0, 3);
-            long y = Long.parseLong(y2);
-
-            if(x > highestX){
-                highestX = x;
-            }
-            if(x < lowestX){
-                lowestX = x;
-            }
-            if(y > highestY){
-                highestY = y;
-            }
-            if(y < lowestY){
-                lowestY = y;
-            }
+        if (xSize > ySize) {
+            factor = size / xSize;
+        } else {
+            factor = size / ySize;
         }
+    }
+
+    public void calculate2() {
+        lowestY = 0;
+        highestY = 0;
+        lowestX = 0;
+        highestX = 0;
+        xSize = 0;
+        ySize = 0;
+
+        lowestX = (long) (svg.getLowestX() * factor);
+        highestX = (long) (svg.getHighestX() * factor);
+
+        lowestY = (long) (svg.getLowestY() * factor);
+        highestY = (long) (svg.getHighestY() * factor);
+
+        xSize = highestX - lowestX;
+        ySize = highestY - lowestY;
+    }
+    @Override
+    public String toString(){
+        return "Length: " + svg.getLength() +
+       "\nHighest X: " + highestX +
+       "\nLowest X: " + lowestX +
+       "\nHighest Y: " + highestY +
+       "\nLowest Y: " +lowestY +
+       "\nX Size: " + xSize +
+       "\nY Size: " + ySize +
+       "\nFactor: " + factor;
     }
 }

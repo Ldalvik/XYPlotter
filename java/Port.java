@@ -9,6 +9,7 @@ public class Port {
 
     public Port(String comPort) {
         port = SerialPort.getCommPort(comPort);
+        port.setBaudRate(115200);
         port.openPort();
     }
 

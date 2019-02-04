@@ -1,100 +1,79 @@
-import com.fazecast.jSerialComm.SerialPort;
+import java.io.File;
+import javax.xml.parsers.DocumentBuilderFactory;
+import java.util.Arrays;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.util.ArrayList;
-import java.util.Scanner;
+import org.w3c.dom.Document;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.Node;
+import org.w3c.dom.Element;
 
-class Main {
+public class SvgParser {
+    private long[] xCoords;
+    private long[] yCoords;
+    private long[] xCoordsSorted;
+    private long[] yCoordsSorted;
 
-    private static int count = 0;
-
-    public static void main(String[] args) throws Exception {
-
-        Port port = new Port("COM24");
-        SvgParser svg = new SvgParser("ok.svg");
-        Plotter p = new Plotter(svg, 1);
-        p.calculate();
-        int length = svg.getLength();
-        System.out.println("Length=" + length);
-        System.out.println(p.highestX);
-        System.out.println(p.lowestX);
-        System.out.println(p.highestY);
-        System.out.println(p.lowestY);
-        //String xy1 = p.getX(0) + "," + p.getY(
-        // 0) + "/";
-        //String xy2 = p.getX(1) + "," + p.getY(1) + "/";
-        //System.out.println(xy1);
-        //System.out.println(xy2);
-
-        System.out.println("Start drawing? Y/N");
-        Scanner scanner = new Scanner(System.in);
-        String scan = scanner.nextLine().toLowerCase();
-
-        if(scan.equals("y")) {
-            port.send("0,0/");
-        } else if(scan.equals("n")){
-            System.exit(0);
-        }
-
+    public SvgParser(String fileName) {
         try {
-            while (true) {
-                while (port.bytesAvailable() == 0)
-                    Thread.sleep(20);
-                char charRead = port.read();
-                //System.out.println("rec: " + charRead);
-                if (charRead == '5' && count < svg.getLength()) {
-                    String xy = p.getX(count) + "," + p.getY(count);
-                    System.out.println("(" + count + "/" + svg.getLength() + ")" + xy);
-                    port.send(xy + "/");
-                    //port.send("B" + count + ":" + p.getLength() + "/");
-                    count++;
-                } else {
-                    //port.send("BDone!/");
+            File svg = new File(fileName);
+            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+            Document d = dbf.newDocumentBuilder().parse(svg);
+            d.getDocumentElement().normalize();
+            NodeList list = d.getElementsByTagName("circle");
+            xCoordsSorted = new long[list.getLength()];
+            yCoordsSorted = new long[list.getLength()];
+
+            for (int i = 0; i < list.getLength(); i++) {
+                Node node = list.item(i);
+                if (node.getNodeType() == Node.ELEMENT_NODE) {
+                    Element e = (Element) node;
+                    xCoordsSorted[i] = (long) (Float.valueOf(e.getAttribute("cx")) * 1000000);
+                    yCoordsSorted[i] = (long) (Float.valueOf(e.getAttribute("cy")) * 1000000);
+                }
+            }
+            Arrays.sort(xCoordsSorted);
+            Arrays.sort(yCoordsSorted);
+
+            xCoords = new long[list.getLength()];
+            yCoords = new long[list.getLength()];
+            for (int i = 0; i < list.getLength(); i++) {
+                Node node = list.item(i);
+                if (node.getNodeType() == Node.ELEMENT_NODE) {
+                    Element ee = (Element) node;
+                    xCoords[i] = (long) (Float.valueOf(ee.getAttribute("cx")) * 1000000) - xCoordsSorted[0];
+                    yCoords[i] = (long) (Float.valueOf(ee.getAttribute("cy")) * 1000000) - yCoordsSorted[0];
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
-        port.close();
     }
 
-    private static String removeTillWord(String input, String word) {
-        return input.substring(input.indexOf(word) + word.length());
+    long getX(int count) {
+        return xCoords[count];
     }
 
-    public static String removeFromTo(String input, String from, String to){
-        return input.substring(input.indexOf(from), input.indexOf(to));
+    long getY(int count) {
+        return yCoords[count];
     }
 
-    private static String replace(String input, String word, String replace) {
-        return input.replace(word, replace);
+    long getLowestX() {
+        return 0;
     }
 
-    private static String readSvg(String file) throws Exception {
-        StringBuilder sb = new StringBuilder();
-        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
-            String line = br.readLine();
-
-            while (line != null) {
-                sb.append(line);
-                sb.append(System.lineSeparator());
-                line = br.readLine();
-            }
-        }
-        return sb.toString();
+    long getHighestX() {
+        return (xCoordsSorted[xCoordsSorted.length-1]) - xCoordsSorted[0];
     }
 
-    private static String parseSvg(String data, String radius) {
-        String s1 = removeTillWord(data, "<circle");
-        return s1.trim();
+    long getLowestY() {
+        return 0;
     }
 
-    private static String parseTspSvg(String data, String radius) {
-        /*String s1 = removeTillWord(data, "\"M");
-        String s2 = replace(s1, "</g></g></svg>", "");
-        String s3 = replace(s2, "\" />", "");*/
-        String s4 = replace(data, ",,", ",");
-        return s4.trim();
+    long getHighestY() {
+        return (yCoordsSorted[yCoordsSorted.length-1]) - yCoordsSorted[0];
+    }
+
+    int getLength() {
+        return xCoords.length;
     }
 }
