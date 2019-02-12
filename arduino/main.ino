@@ -3,40 +3,45 @@ uint8_t dirY;
 #define POS HIGH
 #define NEG LOW
 String content = "";
-int start = true;
-int X_DELAY = 150;
-int Y_DELAY = 150;
+int CAN_TAP = true;
+int X_SPEED = 150;
+int Y_SPEED = 150;
+int HOME_SPEED = 50;
 int TAP_DELAY = 30;
 int TAP_LOOP_HIGH = 400;
 int TAP_LOOP_LOW = 400;
 int TAP_ONE = 0;
 int TAP_TWO = 1;
 
-#define xDirection 12
-#define xStep 13
-#define yDirection 10
-#define yStep 11
-#define xLimit 6
-#define yLimit 7
-#define tapDirection 8
-#define tapStep 9
+#define Y_STEP 13
+#define Y_DIR 12
+#define X_STEP 11
+#define X_DIR 10
+#define TAP_STEP 9
+#define TAP_DIR 8
+#define TAP_LIMIT 7
+#define Y_LIMIT 6
+#define X_LIMIT 5
+long xsize;
+long ysize;
 
 void setup() {
-  pinMode(yDirection, OUTPUT);
-  pinMode(yStep, OUTPUT);
-  pinMode(xDirection, OUTPUT);
-  pinMode(xStep, OUTPUT);
-  pinMode(tapDirection, OUTPUT);
-  pinMode(tapStep, OUTPUT);
-  pinMode(xLimit, INPUT);
-  pinMode(yLimit, INPUT);
+  pinMode(Y_STEP, OUTPUT);
+  pinMode(Y_DIR, OUTPUT);
+  pinMode(X_STEP, OUTPUT);
+  pinMode(X_DIR, OUTPUT);
+  pinMode(TAP_STEP, OUTPUT);
+  pinMode(TAP_DIR, OUTPUT);
+  pinMode(TAP_LIMIT, INPUT);
+  pinMode(Y_LIMIT, INPUT);
+  pinMode(X_LIMIT, INPUT);
   Serial.begin(115200);
   homePen();
 }
 
 void loop() {
   if (Serial.available()) {
-    char data = (char)Serial.read();
+    char data = (char) Serial.read();
     if (data == '/') {
       int x = getValue(content, ',', 0).toInt();
       int y = getValue(content, ',', 1).toInt();
@@ -48,47 +53,60 @@ void loop() {
   }
 }
 
-void moveX(int dir) {
-  digitalWrite(xDirection, dir);
-  digitalWrite(xStep, HIGH);
-  delayMicroseconds(X_DELAY);
-  digitalWrite(xStep, LOW);
-  delayMicroseconds(X_DELAY);
+void moveX(int dir, int frequency) {
+  digitalWrite(X_DIR, dir);
+  digitalWrite(X_STEP, HIGH);
+  delayMicroseconds(frequency);
+  digitalWrite(X_STEP, LOW);
+  delayMicroseconds(frequency);
 }
 
 void homePen() {
-  digitalWrite(tapDirection, 1);
+  digitalWrite(TAP_DIR, 1);
   do {
-    digitalWrite(tapStep, HIGH);
-    delayMicroseconds(300);
-    digitalWrite(tapStep, LOW);
-    delayMicroseconds(300);
-  } while (digitalRead(yLimit) == LOW);
+    digitalWrite(TAP_STEP, HIGH);
+    delayMicroseconds(TAP_DELAY);
+    digitalWrite(TAP_STEP, LOW);
+    delayMicroseconds(TAP_DELAY);
+  } while (digitalRead(TAP_LIMIT) == LOW);
+
+  do {
+    if (digitalRead(X_LIMIT) == LOW) {
+      moveX(0, HOME_SPEED);
+    }
+    if (digitalRead(Y_LIMIT) == LOW) {
+      moveY(0, HOME_SPEED);
+    }
+  } while (digitalRead(Y_LIMIT) == LOW || digitalRead(X_LIMIT) == LOW);
+
+  for (int i = 0; i < 24500; i++) {
+    moveY(1, HOME_SPEED);
+  }
 }
 
 void tap() {
-  digitalWrite(tapDirection, TAP_ONE);
-  do{
-    digitalWrite(tapStep, HIGH);
+  digitalWrite(TAP_DIR, TAP_ONE);
+  do {
+    digitalWrite(TAP_STEP, HIGH);
     delayMicroseconds(TAP_DELAY);
-    digitalWrite(tapStep, LOW);
+    digitalWrite(TAP_STEP, LOW);
     delayMicroseconds(TAP_DELAY);
-  } while(digitalRead(yLimit) == HIGH);
-  digitalWrite(tapDirection, TAP_TWO);
-  for(int i = 0; i < 200; i++){
-    digitalWrite(tapStep, HIGH);
+  } while (digitalRead(TAP_LIMIT) == HIGH);
+  digitalWrite(TAP_DIR, TAP_TWO);
+  for (int i = 0; i < 200; i++) {
+    digitalWrite(TAP_STEP, HIGH);
     delayMicroseconds(TAP_DELAY);
-    digitalWrite(tapStep, LOW);
+    digitalWrite(TAP_STEP, LOW);
     delayMicroseconds(TAP_DELAY);
   }
 }
 
-void moveY(int dir) {
-  digitalWrite(yDirection, dir);
-  digitalWrite(yStep, HIGH);
-  delayMicroseconds(Y_DELAY);
-  digitalWrite(yStep, LOW);
-  delayMicroseconds(Y_DELAY);
+void moveY(int dir, int frequency) {
+  digitalWrite(Y_DIR, dir);
+  digitalWrite(Y_STEP, HIGH);
+  delayMicroseconds(frequency);
+  digitalWrite(Y_STEP, LOW);
+  delayMicroseconds(frequency);
 }
 
 void alg(int xx, int yy)
@@ -99,16 +117,16 @@ void alg(int xx, int yy)
   int y = abs(yy);
   if (x != 0) {
     for (int i = 0; i < x; i++) {
-      moveX(dirX);
+      moveX(dirX, X_SPEED);
     }
   }
 
   if (y != 0) {
     for (int i = 0; i < y; i++) {
-      moveY(dirY);
+      moveY(dirY, Y_SPEED);
     }
   }
-  if (start) {
+  if (CAN_TAP) {
     tap();
   }
   Serial.print("5");
