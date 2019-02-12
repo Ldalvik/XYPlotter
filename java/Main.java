@@ -4,10 +4,10 @@ class Main {
     private static int count = 0;
 
     public static void main(String[] args){
-        Port port = new Port("COM24");
-        String fileName = "marilyn 2.svg";
+        Port port = new Port("COM35");
+        String fileName = "crybaby o.svg";
         SvgParser svg = new SvgParser(fileName);
-        Plotter p = new Plotter(svg, 15000);
+        Plotter p = new Plotter(svg, 24000);
         p.calculate();
         p.calculate2();
         for(int i = 0; i < svg.getLength(); i ++){
@@ -21,9 +21,12 @@ class Main {
 
         if(scan.equals("y")) {
             port.send("0,0/");
-        } else if(scan.equals("n")){
-            System.exit(0);
+        } else if(scan.equals("manual")){
+            port.send("500,0" + "/");
         }
+        long x_fix = p.getStartX();
+        long y_fix = p.getStartY();
+        port.send(x_fix + "," +  y_fix + "/");
 
         try {
             while (true) {

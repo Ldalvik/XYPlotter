@@ -1,6 +1,7 @@
 import java.io.File;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.util.Arrays;
+import java.util.Comparator;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
@@ -12,6 +13,7 @@ public class SvgParser {
     private long[] yCoords;
     private long[] xCoordsSorted;
     private long[] yCoordsSorted;
+    private int[][] sortedCoords;
 
     public SvgParser(String fileName) {
         try {
@@ -36,14 +38,20 @@ public class SvgParser {
 
             xCoords = new long[list.getLength()];
             yCoords = new long[list.getLength()];
+            sortedCoords = new int[list.getLength()][2];
+
             for (int i = 0; i < list.getLength(); i++) {
                 Node node = list.item(i);
                 if (node.getNodeType() == Node.ELEMENT_NODE) {
                     Element ee = (Element) node;
                     xCoords[i] = (long) (Float.valueOf(ee.getAttribute("cx")) * 1000000) - xCoordsSorted[0];
                     yCoords[i] = (long) (Float.valueOf(ee.getAttribute("cy")) * 1000000) - yCoordsSorted[0];
+                    sortedCoords[i][0] = (int) xCoords[i];
+                    sortedCoords[i][1] = (int) yCoords[i];
+
                 }
             }
+            sortbyColumn(sortedCoords, 0);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -51,6 +59,14 @@ public class SvgParser {
 
     long getX(int count) {
         return xCoords[count];
+    }
+
+    long getStartX() {
+        return xCoords[0];
+    }
+
+    long getStartY() {
+        return yCoords[0];
     }
 
     long getY(int count) {
@@ -75,5 +91,18 @@ public class SvgParser {
 
     int getLength() {
         return xCoords.length;
+    }
+
+    public static void sortbyColumn(int arr[][], int col) {
+        Arrays.sort(arr, new Comparator<int[]>() {
+            @Override
+            public int compare(final int[] entry1, final int[] entry2) {
+
+                if (entry1[col] > entry2[col])
+                    return 1;
+                else
+                    return -1;
+            }
+        });
     }
 }

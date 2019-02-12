@@ -43,6 +43,14 @@ public class Plotter {
         return y;
     }
 
+    public long getStartX() {
+        return (long) (svg.getX(0) * factor);
+    }
+
+    public long getStartY() {
+        return (long) (svg.getY(0) * factor);
+    }
+
     public void calculate() {
         lowestX = svg.getLowestX();
         highestX =  svg.getHighestX();
@@ -85,6 +93,8 @@ public class Plotter {
        "\nLowest Y: " +lowestY +
        "\nX Size: " + xSize +
        "\nY Size: " + ySize +
-       "\nFactor: " + factor;
+       "\nFactor: " + factor +
+       "\nStart X: " + getStartY() +
+       "\nStart Y: " + getStartX();
     }
 }
