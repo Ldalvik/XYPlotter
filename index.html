@@ -1,0 +1,94 @@
+<input type="text" placeholder="X_SPEED" id="xspeed"/>
+<button onclick="xspeed()">Send</button> <br>
+<input type="text" placeholder="Y_SPEED" id="yspeed"/>
+<button onclick="yspeed()">Send</button> <br>
+<input type="text" placeholder="HOME_SPEED" id="homespeed"/>
+<button onclick="homespeed()">Send</button> <br>
+<input type="text" placeholder="TAP_DELAY" id="tapdelay"/>
+<button onclick="tapdelay()">Send</button> <br>
+<button onclick="start()">Start</button><br>
+<button id="up">Up</button><br>
+<button id="left">Left</button>
+<button id="right">Right</button><br>
+<button id="down">Down</button>
+<button id="tap">Tap</button>
+<script>
+    var textInfo = new Array();
+    var interval;
+    document.getElementById("left").onmousedown = function () {
+        interval = setInterval(function () {
+            moveLeft();
+        }, 15);
+    };
+    document.getElementById("left").onmouseup = function () {
+        clearInterval(interval);
+    };
+    document.getElementById("right").onmousedown = function () {
+        interval = setInterval(function () {
+            moveRight();
+        }, 15);
+    };
+    document.getElementById("right").onmouseup = function () {
+        clearInterval(interval);
+    };
+    document.getElementById("up").onmousedown = function () {
+        interval = setInterval(function () {
+            moveUp();
+        }, 15);
+    };
+    document.getElementById("up").onmouseup = function () {
+        clearInterval(interval);
+    };
+
+    document.getElementById("down").onmousedown = function () {
+        interval = setInterval(function () {
+            moveDown();
+        }, 15);
+    };
+    document.getElementById("down").onmouseup = function () {
+        clearInterval(interval);
+    };
+
+    function getRequest(url) {
+        fetch(url).then(function (r) {
+        }).catch(function (err) {
+        });
+    }
+
+    function moveLeft() {
+        var id = document.getElementById('id').value;
+        var _x = textInfo[id].x - 10;
+        textInfo[id].x = _x;
+        getRequest('http://localhost:8080/update/?text=' + textInfo[id].text + '&x=' + textInfo[id].x + '&y=' + textInfo[id].y + '&color=' + textInfo[id].color + '&size=' + textInfo[id].size + '&id=' + id);
+    }
+
+    function moveRight() {
+        var id = document.getElementById('id').value;
+        var _x = textInfo[id].x + 10;
+        textInfo[id].x = _x;
+        getRequest('http://localhost:8080/update/?text=' + textInfo[id].text + '&x=' + textInfo[id].x + '&y=' + textInfo[id].y + '&color=' + textInfo[id].color + '&size=' + textInfo[id].size + '&id=' + id);
+    }
+
+    function moveDown() {
+        var id = document.getElementById('id').value;
+        var _y = textInfo[id].y + 10;
+        textInfo[id].y = _y;
+        getRequest('http://localhost:8080/update/?text=' + textInfo[id].text + '&x=' + textInfo[id].x + '&y=' + textInfo[id].y + '&color=' + textInfo[id].color + '&size=' + textInfo[id].size + '&id=' + id);
+    }
+
+    function moveUp() {
+        var id = document.getElementById('id').value;
+        var _y = textInfo[id].y - 10;
+        textInfo[id].y = _y;
+        getRequest('http://localhost:8080/update/?text=' + textInfo[id].text + '&x=' + textInfo[id].x + '&y=' + textInfo[id].y + '&color=' + textInfo[id].color + '&size=' + textInfo[id].size + '&id=' + id);
+    }
+
+    function start() {
+        var xs = document.getElementById('xspeed').value;
+        var ys = document.getElementById('yspeed').value;
+        var hs = document.getElementById('homespeed').value;
+        var td = document.getElementById('tapdelay').value;
+        //textInfo[id].size = _size;
+        getRequest('http://localhost:8080/?xspeed=' + xs + '&yspeed=' + ys + '&homespeed=' + hs + '&tapdelay=' + td);
+    }
+</script>
