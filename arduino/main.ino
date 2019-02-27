@@ -8,19 +8,17 @@ int X_SPEED = 150;
 int Y_SPEED = 150;
 int HOME_SPEED = 50;
 int TAP_DELAY = 30;
-int TAP_LOOP_HIGH = 400;
-int TAP_LOOP_LOW = 400;
-int TAP_ONE = 0;
-int TAP_TWO = 1;
+int TAP_ONE = 1;
+int TAP_TWO = 0;
 
-#define Y_STEP 13
-#define Y_DIR 12
-#define X_STEP 11
-#define X_DIR 10
-#define TAP_STEP 9
-#define TAP_DIR 8
-#define TAP_LIMIT 7
-#define Y_LIMIT 6
+#define Y_STEP 9
+#define Y_DIR 8
+#define X_STEP 13
+#define X_DIR 2
+#define TAP_STEP 11
+#define TAP_DIR 10
+#define TAP_LIMIT 6
+#define Y_LIMIT 7
 #define X_LIMIT 5
 long xsize;
 long ysize;
@@ -43,9 +41,13 @@ void loop() {
   if (Serial.available()) {
     char data = (char) Serial.read();
     if (data == '/') {
-      int x = getValue(content, ',', 0).toInt();
-      int y = getValue(content, ',', 1).toInt();
-      alg(x, y);
+      if (content.startsWith("EDIT:")) {
+      settings(content);
+      } else {
+        int x = getValue(content, ',', 0).toInt();
+        int y = getValue(content, ',', 1).toInt();
+        alg(x, y);
+      }
       content = "";
     } else {
       content.concat(data);
@@ -61,8 +63,16 @@ void moveX(int dir, int frequency) {
   delayMicroseconds(frequency);
 }
 
+void moveY(int dir, int frequency) {
+  digitalWrite(Y_DIR, dir);
+  digitalWrite(Y_STEP, HIGH);
+  delayMicroseconds(frequency);
+  digitalWrite(Y_STEP, LOW);
+  delayMicroseconds(frequency);
+}
+
 void homePen() {
-  digitalWrite(TAP_DIR, 1);
+  digitalWrite(TAP_DIR, 0);
   do {
     digitalWrite(TAP_STEP, HIGH);
     delayMicroseconds(TAP_DELAY);
@@ -101,12 +111,16 @@ void tap() {
   }
 }
 
-void moveY(int dir, int frequency) {
-  digitalWrite(Y_DIR, dir);
-  digitalWrite(Y_STEP, HIGH);
-  delayMicroseconds(frequency);
-  digitalWrite(Y_STEP, LOW);
-  delayMicroseconds(frequency);
+void settings(String data) {
+  data.remove(0, 5);
+  int xspeed = getValue(data, ',', 0).toInt();
+  int yspeed = getValue(data, ',', 1).toInt();
+  int homespeed = getValue(data, ',', 2).toInt();
+  int tapdelay = getValue(data, ',', 3).toInt();
+  X_SPEED = xspeed;
+  Y_SPEED = yspeed;
+  HOME_SPEED = homespeed;
+  TAP_DELAY = tapdelay;
 }
 
 void alg(int xx, int yy)
