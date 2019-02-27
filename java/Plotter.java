@@ -1,3 +1,5 @@
+package plotter;
+
 import java.util.Arrays;
 
 public class Plotter {

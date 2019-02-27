@@ -1,3 +1,5 @@
+package plotter;
+
 import java.io.File;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.util.Arrays;

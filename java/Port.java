@@ -1,3 +1,5 @@
+package plotter;
+
 import com.fazecast.jSerialComm.SerialPort;
 
 import java.io.IOException;
