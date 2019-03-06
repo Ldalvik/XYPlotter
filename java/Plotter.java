@@ -67,6 +67,7 @@ public class Plotter {
         } else {
             factor = size / ySize;
         }
+        calculate2();
     }
 
     public void calculate2() {
