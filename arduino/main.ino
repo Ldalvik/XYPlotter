@@ -34,15 +34,21 @@ void setup() {
   pinMode(Y_LIMIT, INPUT);
   pinMode(X_LIMIT, INPUT);
   Serial.begin(115200);
-  homePen();
+  //homePen();
 }
 
 void loop() {
   if (Serial.available()) {
     char data = (char) Serial.read();
     if (data == '/') {
-      if (content.startsWith("EDIT:")) {
-      settings(content);
+      if (content.equals("tap")) {
+        tap();
+      } else if (content.startsWith("EDIT:")) {
+        settings(content);
+      } else if (content.startsWith("M:")) {
+        int x = getValue(content, ',', 0).toInt();
+        int y = getValue(content, ',', 1).toInt();
+        algM(x, y);
       } else {
         int x = getValue(content, ',', 0).toInt();
         int y = getValue(content, ',', 1).toInt();
@@ -144,6 +150,25 @@ void alg(int xx, int yy)
     tap();
   }
   Serial.print("5");
+}
+
+void algM(int xx, int yy)
+{
+  if (xx <= 0) dirX = NEG; else dirX = POS;
+  if (yy <= 0) dirY = POS; else dirY = NEG;
+  int x = abs(xx);
+  int y = abs(yy);
+  if (x != 0) {
+    for (int i = 0; i < x; i++) {
+      moveX(dirX, X_SPEED);
+    }
+  }
+
+  if (y != 0) {
+    for (int i = 0; i < y; i++) {
+      moveY(dirY, Y_SPEED);
+    }
+  }
 }
 
 String getValue(String data, char separator, int index) {
