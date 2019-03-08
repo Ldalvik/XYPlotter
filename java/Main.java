@@ -34,7 +34,7 @@ class Main extends NanoHTTPD {
         String TAP_DELAY = r.TAP_DELAY;
         String file = "";
         try {
-            file = new String(Files.readAllBytes(Paths.get("index.html")), StandardCharsets.UTF_8);
+            file = new String(Files.readAllBytes(Paths.get("webserver.html")), StandardCharsets.UTF_8);
         } catch (IOException e) {
             e.printStackTrace();
         }
