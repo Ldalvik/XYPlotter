@@ -15,7 +15,8 @@ class Main extends NanoHTTPD {
 
     public Main() throws IOException {
         super(8080);
-        port = new Port("COM31");
+        //port = new Port("COM31");
+        port = new Port("/dev/ttyUSB0");
         start(NanoHTTPD.SOCKET_READ_TIMEOUT, false);
         try (final DatagramSocket socket = new DatagramSocket()) {
             socket.connect(InetAddress.getByName("8.8.8.8"), 10002);
@@ -49,7 +50,7 @@ class Main extends NanoHTTPD {
                     System.out.println(i + ": " + p.getX(i) + " | " + p.getY(i));
                 }
 
-                port.send(p.getStartX() + "," + p.getStartY() + "/");
+                port.send("PLOT:" + p.getStartX() + "," + p.getStartY() + "/");
 
                 try {
                     while (true) {
@@ -57,7 +58,7 @@ class Main extends NanoHTTPD {
                             Thread.sleep(20);
                         char charRead = port.read();
                         if (charRead == '5' && count < svg.getLength() - 1) {
-                            String xy = p.getX(count) + "," + p.getY(count);
+                            String xy = "PLOT:" + p.getX(count) + "," + p.getY(count);
                             System.out.println("(" + count + "/" + svg.getLength() + ") " + xy);
                             port.send(xy + "/");
                             count++;
@@ -71,16 +72,16 @@ class Main extends NanoHTTPD {
                 port.close();
             }
             break;
-                case "/left/": port.send("M:" + -100 + "," + 0 + "/");
+                case "/left/": port.send("M:" + 100 + "," + 0 + "/");
                     System.out.println("/left/");
                     break;
-                case "/right/": port.send("M:" + 100 + "," + 0 + "/");
+                case "/right/": port.send("M:" + -100 + "," + 0 + "/");
                     System.out.println("/right/");
                     break;
-                case "/up/": port.send("M:" + 0 + "," + -100 + "/");
+                case "/up/": port.send("M:" + 0 + "," + 100 + "/");
                     System.out.println("/up/");
                     break;
-                case "/down/": port.send("M:" + 0 + "," + 100 + "/");
+                case "/down/": port.send("M:" + 0 + "," + -100 + "/");
                     System.out.println("/down/");
                     break;
                 case "/tap/": port.send("tap/");
