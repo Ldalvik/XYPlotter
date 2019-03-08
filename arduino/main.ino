@@ -14,7 +14,7 @@ int TAP_TWO = 0;
 #define Y_STEP 9
 #define Y_DIR 8
 #define X_STEP 13
-#define X_DIR 2
+#define X_DIR 12
 #define TAP_STEP 11
 #define TAP_DIR 10
 #define TAP_LIMIT 6
@@ -43,16 +43,15 @@ void loop() {
     if (data == '/') {
       if (content.equals("tap")) {
         tap();
-      } else if (content.startsWith("EDIT:")) {
+      }
+      if (content.startsWith("EDIT:")) {
         settings(content);
-      } else if (content.startsWith("M:")) {
-        int x = getValue(content, ',', 0).toInt();
-        int y = getValue(content, ',', 1).toInt();
-        algM(x, y);
-      } else {
-        int x = getValue(content, ',', 0).toInt();
-        int y = getValue(content, ',', 1).toInt();
-        alg(x, y);
+      }
+      if (content.startsWith("PLOT:")) {
+        alg(content);
+      }
+      if (content.startsWith("M:")) {
+        algM(content, true);
       }
       content = "";
     } else {
@@ -121,17 +120,22 @@ void settings(String data) {
   data.remove(0, 5);
   int xspeed = getValue(data, ',', 0).toInt();
   int yspeed = getValue(data, ',', 1).toInt();
+  
   int homespeed = getValue(data, ',', 2).toInt();
   int tapdelay = getValue(data, ',', 3).toInt();
+  
   X_SPEED = xspeed;
   Y_SPEED = yspeed;
   HOME_SPEED = homespeed;
   TAP_DELAY = tapdelay;
 }
 
-void alg(int xx, int yy)
-{
-  if (xx <= 0) dirX = NEG; else dirX = POS;
+void alg(String data) {
+  data.remove(0, 5);
+  int xx = getValue(data, ',', 0).toInt();
+  int yy = getValue(data, ',', 1).toInt();
+
+  if (xx <= 0) dirX = POS; else dirX = NEG;
   if (yy <= 0) dirY = POS; else dirY = NEG;
   int x = abs(xx);
   int y = abs(yy);
@@ -152,22 +156,32 @@ void alg(int xx, int yy)
   Serial.print("5");
 }
 
-void algM(int xx, int yy)
-{
-  if (xx <= 0) dirX = NEG; else dirX = POS;
+void algM(String data, boolean debug) {
+  data.remove(0, 2);
+  Serial.println(data);
+  int xx = getValue(data, ',', 0).toInt();
+  int yy = getValue(data, ',', 1).toInt();
+
+  if (xx <= 0) dirX = POS; else dirX = NEG;
   if (yy <= 0) dirY = POS; else dirY = NEG;
   int x = abs(xx);
   int y = abs(yy);
+
   if (x != 0) {
     for (int i = 0; i < x; i++) {
       moveX(dirX, X_SPEED);
     }
   }
-
   if (y != 0) {
     for (int i = 0; i < y; i++) {
       moveY(dirY, Y_SPEED);
     }
+  }
+
+  if (debug) {
+    Serial.print(xx);
+    Serial.print(",");
+    Serial.println(yy);
   }
 }
 
