@@ -34,7 +34,7 @@ class Main extends NanoHTTPD {
         String TAP_DELAY = r.TAP_DELAY;
         String file = "";
         try {
-            file = new String(Files.readAllBytes(Paths.get("webserver.html")), StandardCharsets.UTF_8);
+            file = new String(Files.readAllBytes(Paths.get("index.html")), StandardCharsets.UTF_8);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -90,25 +90,6 @@ class Main extends NanoHTTPD {
                 case "/save/": port.send("EDIT:" + X_SPEED + "," + Y_SPEED + "," + HOME_SPEED + "," + TAP_DELAY + "/");
                     System.out.println("/save/");
                     break;
-
-           /* case "/left/":
-                System.out.println(-1 + "," + 0 + "/");
-                break;
-            case "/right/":
-                System.out.println(1 + "," + 0 + "/");
-                break;
-            case "/up/":
-                System.out.println(0 + "," + -1 + "/");
-                break;
-            case "/down/":
-                System.out.println(0 + "," + 1 + "/");
-                break;
-            case "/tap/":
-                System.out.println("tap/");
-                break;
-            case "/save/":
-                System.out.println("EDIT:" + X_SPEED + "," + Y_SPEED + "," + HOME_SPEED + "," + TAP_DELAY + "/");
-                break;*/
         }
         return newFixedLengthResponse(file);
     }
