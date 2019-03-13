@@ -1,17 +1,11 @@
 package plotter;
 
 import fi.iki.elonen.NanoHTTPD;
-import sun.misc.IOUtils;
-
 import java.io.*;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.Map;
 
-class TestMain extends NanoHTTPD {
+public class TestMain extends NanoHTTPD {
     private static int count = 0;
     private static Port port;
 
@@ -26,13 +20,12 @@ class TestMain extends NanoHTTPD {
     }
 
     public static final String page = "<html>" +
-            "<head><title>Web</title></head>" +
+            "<head><title>X Y Plotter server</title></head>" +
             "<body>" +
-            "<h2>Web</h2>" +
-            "<a href=\"/\">HOME</a>" +
+            "<h2>X Y Plotter</h2>" +
             "<form enctype=\"multipart/form-data\" action=\"/upload\" method=\"post\">\n" +
             "File: <input name=\"uploadFile\" type=\"file\"><br>\n" +
-            "Path: <input type=\"text\" name=\"path\" value=\"/sdcard/uploads/\"><br>\n" +
+            "Path: <input type=\"text\" name=\"path\" value=\"/directory/\"><br>\n" +
             "<input type=\"submit\" value=\"Upload\" name=\"uploadButton\">\n" +
             "</form>" +
             "</body>" +
@@ -41,47 +34,22 @@ class TestMain extends NanoHTTPD {
     @Override
     public NanoHTTPD.Response serve(NanoHTTPD.IHTTPSession session) {
         Response response = null;
-        if (session.getMethod().equals(NanoHTTPD.Method.POST)) {
-            String tempFilename = "te";
-            if (tempFilename != null) {
-                try {
-                    getIS(session);
-                    response = newFixedLengthResponse(NanoHTTPD.Response.Status.OK, NanoHTTPD.MIME_HTML, "OK !");
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    response = newFixedLengthResponse(NanoHTTPD.Response.Status.INTERNAL_ERROR, NanoHTTPD.MIME_HTML, "Upload Error !");
-                }
-            } else {
-                response = newFixedLengthResponse(NanoHTTPD.Response.Status.OK, NanoHTTPD.MIME_HTML, "Upload Error !");
+        String tempFilename = "";
+        if (tempFilename != null) {
+            try {
+                Main.parse(session);
+                response = newFixedLengthResponse(NanoHTTPD.Response.Status.OK, NanoHTTPD.MIME_HTML, "OK!");
+            } catch (Exception e) {
+                e.printStackTrace();
+                response = newFixedLengthResponse(NanoHTTPD.Response.Status.INTERNAL_ERROR, NanoHTTPD.MIME_HTML, "Upload Error!");
             }
-            return response;
+        } else {
+            response = newFixedLengthResponse(NanoHTTPD.Response.Status.OK, NanoHTTPD.MIME_HTML, "No file selected.");
         }
-
-        StringBuilder sb = new StringBuilder();
-        sb.append(page);
-        response = newFixedLengthResponse(NanoHTTPD.Response.Status.OK, NanoHTTPD.MIME_HTML, sb.toString());
         return response;
     }
 
-    public void getIS(IHTTPSession session) {
-        StringBuffer response = new StringBuffer();
-        try{
-            BufferedReader in = new BufferedReader(new InputStreamReader(session.getInputStream()));
-            String inputLine;
-            while ((inputLine = in.readLine()) != null) {
-                response.append(inputLine+"\n");
-                //System.out.println(inputLine);
-            }
-        } catch(Exception e) {
-            FileParser fp = new FileParser(response.toString());
-            System.out.println(fp.getFileName());
-            System.out.println(fp.getContent());
-            System.out.println(fp.getDirectory());
-        }
-    }
-
     public static void main(String[] args) {
-
         try {
             new TestMain();
         } catch (IOException ioe) {

@@ -2,7 +2,9 @@ package plotter;
 
 import fi.iki.elonen.NanoHTTPD;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
@@ -90,12 +92,29 @@ class Main extends NanoHTTPD {
                 case "/save/": port.send("EDIT:" + X_SPEED + "," + Y_SPEED + "," + HOME_SPEED + "," + TAP_DELAY + "/");
                     System.out.println("/save/");
                     break;
+            case "/upload/": parse(session);
+                break;
         }
         return newFixedLengthResponse(file);
     }
 
+    public static void parse(IHTTPSession session) {
+        StringBuffer response = new StringBuffer();
+        try{
+            BufferedReader in = new BufferedReader(new InputStreamReader(session.getInputStream()));
+            String inputLine;
+            while ((inputLine = in.readLine()) != null) {
+                response.append(inputLine+"\n");
+                //System.out.println(inputLine);
+            }
+        } catch(Exception e) {
+            FileParser fp = new FileParser(response.toString());
+            System.out.println(fp.getFileName());
+            System.out.println(fp.getContent());
+            System.out.println(fp.getDirectory());
+        }
+    }
     public static void main(String[] args) {
-
         try {
             new Main();
         } catch (IOException ioe) {
