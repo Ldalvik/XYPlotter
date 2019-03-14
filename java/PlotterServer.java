@@ -10,11 +10,13 @@ import java.net.SocketTimeoutException;
 
 class PlotterServer extends NanoHTTPD {
     private static String FILE_CONTENTS;
+    private static String WEBSERVER_FILE;
     private Control c;
     private Send s;
 
-    public PlotterServer(int SERVER_PORT, String comPort, int socketTimeout) throws IOException {
+    public PlotterServer(int SERVER_PORT, String comPort, int socketTimeout, String WEBSERVER_FILE) throws IOException {
         super(SERVER_PORT);
+        this.WEBSERVER_FILE = WEBSERVER_FILE;
         Port port = new Port(comPort);
         start(socketTimeout, false);
         print(Utils.getServerUrl(SERVER_PORT));
@@ -56,7 +58,7 @@ class PlotterServer extends NanoHTTPD {
                 print("file upload");
                 break;
         }
-        return newFixedLengthResponse(Utils.readFile("index.html"));
+        return newFixedLengthResponse(Utils.readFile(WEBSERVER_FILE));
     }
 
     private static void readInputStream(IHTTPSession session) {
