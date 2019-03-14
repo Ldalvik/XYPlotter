@@ -1,15 +1,13 @@
 package plotter;
 
 import com.fazecast.jSerialComm.SerialPort;
-
 import java.io.IOException;
-import java.util.Scanner;
 
 public class Port {
 
     private SerialPort port;
 
-    public Port(String comPort) {
+    Port(String comPort) {
         port = SerialPort.getCommPort(comPort);
         port.setBaudRate(115200);
         port.openPort();
@@ -23,15 +21,15 @@ public class Port {
         }
     }
 
-    public int bytesAvailable(){
+    int bytesAvailable(){
         return port.bytesAvailable();
     }
 
-    public char read() throws IOException {
+    char read() throws IOException {
         return (char) port.getInputStream().read();
     }
 
-    public void close(){
+    void close(){
         port.closePort();
     }
 }

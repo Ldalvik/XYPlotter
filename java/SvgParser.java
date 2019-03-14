@@ -10,14 +10,13 @@ import org.w3c.dom.NodeList;
 import org.w3c.dom.Node;
 import org.w3c.dom.Element;
 
-public class SvgParser {
+class SvgParser {
     private long[] xCoords;
     private long[] yCoords;
     private long[] xCoordsSorted;
     private long[] yCoordsSorted;
-    private int[][] sortedCoords;
 
-    public SvgParser(String fileName) {
+    SvgParser(String fileName) {
         try {
             File svg = new File(fileName);
             DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
@@ -40,7 +39,7 @@ public class SvgParser {
 
             xCoords = new long[list.getLength()];
             yCoords = new long[list.getLength()];
-            sortedCoords = new int[list.getLength()][2];
+            int[][] sortedCoords = new int[list.getLength()][2];
 
             for (int i = 0; i < list.getLength(); i++) {
                 Node node = list.item(i);
@@ -53,7 +52,7 @@ public class SvgParser {
 
                 }
             }
-            sortbyColumn(sortedCoords, 0);
+            sortByColumn(sortedCoords, 0);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -80,7 +79,7 @@ public class SvgParser {
     }
 
     long getHighestX() {
-        return (xCoordsSorted[xCoordsSorted.length-1]) - xCoordsSorted[0];
+        return (xCoordsSorted[xCoordsSorted.length - 1]) - xCoordsSorted[0];
     }
 
     long getLowestY() {
@@ -88,23 +87,19 @@ public class SvgParser {
     }
 
     long getHighestY() {
-        return (yCoordsSorted[yCoordsSorted.length-1]) - yCoordsSorted[0];
+        return (yCoordsSorted[yCoordsSorted.length - 1]) - yCoordsSorted[0];
     }
 
     int getLength() {
         return xCoords.length;
     }
 
-    public static void sortbyColumn(int arr[][], int col) {
-        Arrays.sort(arr, new Comparator<int[]>() {
-            @Override
-            public int compare(final int[] entry1, final int[] entry2) {
-
-                if (entry1[col] > entry2[col])
-                    return 1;
-                else
-                    return -1;
-            }
+    public static void sortByColumn(int arr[][], int col) {
+        Arrays.sort(arr, (entry1, entry2) -> {
+            if (entry1[col] > entry2[col])
+                return 1;
+            else
+                return -1;
         });
     }
 }
