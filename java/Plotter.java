@@ -1,21 +1,19 @@
 package plotter;
 
-import java.util.Arrays;
-
 public class Plotter {
     private long currentX = 0;
     private long currentY = 0;
-    public float size;
-    public float factor = 1f;
-    public long lowestY;
-    public long highestY;
-    public long lowestX;
-    public long highestX;
-    public float xSize;
-    public float ySize;
+    private float size;
+    private float factor = 1f;
+    private long lowestY;
+    private long highestY;
+    private long lowestX;
+    private long highestX;
+    private float xSize;
+    private float ySize;
     private SvgParser svg;
 
-    public Plotter(SvgParser svg, float size) {
+    Plotter(SvgParser svg, float size) {
         this.svg = svg;
         this.size = size;
     }
@@ -45,15 +43,15 @@ public class Plotter {
         return y;
     }
 
-    public long getStartX() {
+    long getStartX() {
         return (long) (svg.getX(0) * factor);
     }
 
-    public long getStartY() {
+    long getStartY() {
         return (long) (svg.getY(0) * factor);
     }
 
-    public void calculate() {
+    void calculate() {
         lowestX = svg.getLowestX();
         highestX =  svg.getHighestX();
         lowestY = svg.getLowestY();
@@ -70,7 +68,7 @@ public class Plotter {
         calculate2();
     }
 
-    public void calculate2() {
+    private void calculate2() {
         lowestY = 0;
         highestY = 0;
         lowestX = 0;
