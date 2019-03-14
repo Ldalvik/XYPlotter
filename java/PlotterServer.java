@@ -18,19 +18,18 @@ class PlotterServer extends NanoHTTPD {
         super(SERVER_PORT);
         this.WEBSERVER_FILE = WEBSERVER_FILE;
         Port port = new Port(comPort);
-        start(socketTimeout, false);
         print(Utils.getServerUrl(SERVER_PORT));
         c = new Control(port);
         s = new Send(port);
+        start(socketTimeout, false);
     }
 
     @Override
     public NanoHTTPD.Response serve(NanoHTTPD.IHTTPSession session) {
         Requests r = new Requests(session);
-
         switch (r.getUri()) {
             case "/start/":
-                c.plot(FILE_CONTENTS, r.SVG_SIZE);
+                c.plot(FILE_CONTENTS, Integer.parseInt(r.getParam("svg_size")));
                 print("start");
                 break;
             case "/left/":
@@ -55,7 +54,7 @@ class PlotterServer extends NanoHTTPD {
                 break;
             case "/upload/":
                 readInputStream(session);
-                print("file upload");
+                print("file uploaded");
                 break;
         }
         return newFixedLengthResponse(Utils.readFile(WEBSERVER_FILE));
@@ -82,4 +81,21 @@ class PlotterServer extends NanoHTTPD {
     static void print(String text) {
         System.out.println(text);
     }
+
+
+
+
+
+    ////////////////////////////////////////////////////////////////
+
+
+
+
+
+    public static void main(String[] args) {
+        try {
+            new PlotterServer(8080, "/dev/ttyUSB0", 1000, "webserver.html");
+        } catch (IOException e) {
+            System.err.println("Couldn't start server:\n" + e);
+        }    }
 }
