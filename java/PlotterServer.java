@@ -10,7 +10,7 @@ import java.net.SocketTimeoutException;
 
 class PlotterServer extends NanoHTTPD {
     private static String FILE_CONTENTS;
-    private static String WEBSERVER_FILE;
+    private String WEBSERVER_FILE;
     private Control c;
     private Send s;
 
