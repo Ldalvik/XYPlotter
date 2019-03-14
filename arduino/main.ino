@@ -10,6 +10,7 @@ int HOME_SPEED = 50;
 int TAP_DELAY = 30;
 int TAP_ONE = 1;
 int TAP_TWO = 0;
+boolean DEBUG = false;
 
 #define Y_STEP 9
 #define Y_DIR 8
@@ -34,7 +35,7 @@ void setup() {
   pinMode(Y_LIMIT, INPUT);
   pinMode(X_LIMIT, INPUT);
   Serial.begin(115200);
-  //homePen();
+  homePen();
 }
 
 void loop() {
@@ -47,11 +48,11 @@ void loop() {
       if (content.startsWith("EDIT:")) {
         settings(content);
       }
-      if (content.startsWith("PLOT:")) {
-        alg(content);
+      if (content.startsWith("AUTO:")) {
+        automatic(content);
       }
-      if (content.startsWith("M:")) {
-        algM(content, true);
+      if (content.startsWith("MANUAL:")) {
+        manual(content);
       }
       content = "";
     } else {
@@ -130,7 +131,7 @@ void settings(String data) {
   TAP_DELAY = tapdelay;
 }
 
-void alg(String data) {
+void automatic(String data) {
   data.remove(0, 5);
   int xx = getValue(data, ',', 0).toInt();
   int yy = getValue(data, ',', 1).toInt();
@@ -156,8 +157,8 @@ void alg(String data) {
   Serial.print("5");
 }
 
-void algM(String data, boolean debug) {
-  data.remove(0, 2);
+void manual(String data, boolean debug) {
+  data.remove(0, 7);
   Serial.println(data);
   int xx = getValue(data, ',', 0).toInt();
   int yy = getValue(data, ',', 1).toInt();
@@ -178,7 +179,7 @@ void algM(String data, boolean debug) {
     }
   }
 
-  if (debug) {
+  if (DEBUG) {
     Serial.print(xx);
     Serial.print(",");
     Serial.println(yy);
