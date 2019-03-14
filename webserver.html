@@ -1,14 +1,8 @@
-<input type="text" placeholder="X_SPEED" id="xspeed"/>
-<br>
-<input type="text" placeholder="Y_SPEED" id="yspeed"/>
-<br>
-<input type="text" placeholder="HOME_SPEED" id="homespeed"/>
-<br>
-<input type="text" placeholder="TAP_DELAY" id="tapdelay"/>
-<br>
-<input type="text" placeholder="File name" id="file_name"/>
-<br><br>
-<button onclick="save()">Save</button>
+<form enctype="multipart/form-data" action="/upload/" method="post">
+    <input name="uploadFile" type="file"><br>
+    <input type="text" name="path" value="/directory/"><br>
+    <input type="submit" value="Upload" name="uploadButton">
+</form>
 <br><br>
 <button onclick="start()">Start</button>
 <br><br>
@@ -79,31 +73,35 @@
     function moveUp() {
         getRequest('http://10.1.41.85:8080/up/');
     }
+
     function moveDown() {
         getRequest('http://10.1.41.85:8080/down/');
     }
+
     function moveLeft() {
         getRequest('http://10.1.41.85:8080/left/');
     }
+
     function moveRight() {
         getRequest('http://10.1.41.85:8080/right/');
     }
+
     function tap() {
         getRequest('http://10.1.41.85:8080/tap/');
     }
 
-    function save(){
+    function save() {
         var xs = document.getElementById('xspeed').value;
         var ys = document.getElementById('yspeed').value;
         var hs = document.getElementById('homespeed').value;
         var td = document.getElementById('tapdelay').value;
         var fn = document.getElementById('file_name').value;
         data[0] = {
-            x_speed:xs,
-            y_speed:ys,
-            home_speed:hs,
-            tap_delay:td,
-            file_name:fn
+            x_speed: xs,
+            y_speed: ys,
+            home_speed: hs,
+            tap_delay: td,
+            file_name: fn
         };
         url_params = '?x_speed=' + data[0].x_speed + '&y_speed=' + data[0].y_speed + '&home_speed=' + data[0].home_speed + '&tap_delay=' + data[0].tap_delay + '&file_name=' + data[0].file_name;
         getRequest('http://10.1.41.85:8080/save/' + url_params);
