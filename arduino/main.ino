@@ -4,8 +4,8 @@ uint8_t dirY;
 #define NEG LOW
 String content = "";
 int CAN_TAP = true;
-int X_SPEED = 150;
-int Y_SPEED = 150;
+int X_SPEED = 100;
+int Y_SPEED = 100;
 int HOME_SPEED = 50;
 int TAP_DELAY = 30;
 int TAP_ONE = 1;
@@ -96,7 +96,7 @@ void homePen() {
   } while (digitalRead(Y_LIMIT) == LOW || digitalRead(X_LIMIT) == LOW);
 
   for (int i = 0; i < 24500; i++) {
-    moveY(1, HOME_SPEED);
+    moveX(1, HOME_SPEED);
   }
 }
 
@@ -157,7 +157,7 @@ void automatic(String data) {
   Serial.print("5");
 }
 
-void manual(String data, boolean debug) {
+void manual(String data) {
   data.remove(0, 7);
   Serial.println(data);
   int xx = getValue(data, ',', 0).toInt();
