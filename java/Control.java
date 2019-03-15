@@ -12,23 +12,24 @@ public class Control {
         s = new Send(port);
     }
 
-    public void plot(String fileContents, int svg_size) {
-        SvgParser svg = new SvgParser(fileContents);
+    public void plot(String fileDirectory, int svg_size) {
+        SvgParser svg = new SvgParser(fileDirectory);
         Plotter p = new Plotter(svg, svg_size);
         p.calculate();
         /*for (int i = 0; i < svg.getLength(); i++) {
             System.out.println(i + ": " + p.getX(i) + " | " + p.getY(i));
         }*/
-        s.setX(p.getStartX()).setY(p.getStartY()).sendMessage(true);
+        s.setX(p.getStartX()).setY(-p.getStartY()).sendMessage(false);
+        PlotterServer.print(p.getStartX() + "," + p.getStartY());
 
         try {
             while (true) {
                 while (port.bytesAvailable() == 0)
-                    Thread.sleep(20);
+                    Thread.sleep(5);
                 char charRead = port.read();
                 if (charRead == '5' && count < svg.getLength() - 1) {
-                    PlotterServer.print("(" + count + "/" + svg.getLength() + ")");
-                    s.setX(svg.getX(count)).setY(svg.getY(count)).sendMessage(false);
+                    //PlotterServer.print("(" + count + "/" + svg.getLength() + ")" + p.getX(count) + "," + p.getY(count));
+                    s.setX(p.getX(count)).setY(p.getY(count)).sendMessage(false);
                     count++;
                 } else {
                     System.exit(0);
@@ -40,6 +41,4 @@ public class Control {
         }
         port.close();
     }
-
-
 }

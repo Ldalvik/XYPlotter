@@ -9,7 +9,7 @@ import java.io.InputStreamReader;
 import java.net.SocketTimeoutException;
 
 class PlotterServer extends NanoHTTPD {
-    private static String FILE_CONTENTS;
+    private static String DIRECTORY;
     private String WEBSERVER_FILE;
     private Control c;
     private Send s;
@@ -29,15 +29,15 @@ class PlotterServer extends NanoHTTPD {
         Requests r = new Requests(session);
         switch (r.getUri()) {
             case "/start/":
-                c.plot(FILE_CONTENTS, Integer.parseInt(r.getParam("svg_size")));
+                c.plot(DIRECTORY, Integer.parseInt(r.getParam("svg_size")));
                 print("start");
                 break;
             case "/left/":
-                s.setX(100).setY(0).sendMessage(true);
+                s.setX(-100).setY(0).sendMessage(true);
                 print("move left");
                 break;
             case "/right/":
-                s.setX(-100).setY(0).sendMessage(true);
+                s.setX(100).setY(0).sendMessage(true);
                 print("move right");
                 break;
             case "/up/":
@@ -70,9 +70,15 @@ class PlotterServer extends NanoHTTPD {
             }
         } catch (SocketTimeoutException e) {
             FileParser fp = new FileParser(response.toString());
-            FILE_CONTENTS = fp.getContent();
-            String DIRECTORY = fp.getDirectory() + fp.getFileName();
-            print("File received, saved to: " + DIRECTORY);
+            String FILE_CONTENTS = fp.getContent();
+            DIRECTORY = fp.getDirectory() + fp.getFileName();
+            try {
+                fp.saveFile(DIRECTORY, FILE_CONTENTS);
+                print("File saved to: " + DIRECTORY);
+            } catch (IOException e1) {
+                print("File not saved: " + e1.getMessage());
+                e1.printStackTrace();
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -94,7 +100,13 @@ class PlotterServer extends NanoHTTPD {
 
     public static void main(String[] args) {
         try {
-            new PlotterServer(8080, "/dev/ttyUSB0", 1000, "webserver.html");
+            new PlotterServer(
+                    8080,
+                    //"COM31",
+                    "/dev/ttyUSB0",
+                    1000,
+                    "webserver.html"
+            );
         } catch (IOException e) {
             System.err.println("Couldn't start server:\n" + e);
         }    }

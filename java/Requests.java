@@ -6,11 +6,8 @@ import java.util.Map;
 public class Requests {
     private NanoHTTPD.IHTTPSession session;
 
-    int SVG_SIZE;
-
-    public Requests(NanoHTTPD.IHTTPSession session) {
+    Requests(NanoHTTPD.IHTTPSession session) {
         this.session = session;
-        SVG_SIZE = Integer.parseInt(getParam("svg_size"));
     }
 
     String getParam(String param) {
@@ -22,7 +19,7 @@ public class Requests {
         return String.valueOf(session.getMethod());
     }
 
-    public String getUri() {
+    String getUri() {
         return session.getUri();
     }
 
