@@ -8,14 +8,14 @@ public class Port {
     private SerialPort port;
 
     Port(String comPort) {
-        port = SerialPort.getCommPort(comPort);
-        port.setBaudRate(115200);
-        port.openPort();
+        port = SerialPort.getCommPort(comPort); //Get COM port by name
+        port.setBaudRate(115200);               //Set baudrate of arduino
+        port.openPort();                        //Connect to COM port
     }
 
     public void send(String msg){
         try {
-            port.getOutputStream().write(msg.getBytes());
+            port.getOutputStream().write(msg.getBytes()); //
         } catch (IOException e) {
             e.printStackTrace();
         }

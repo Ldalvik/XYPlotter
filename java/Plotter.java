@@ -18,8 +18,7 @@ public class Plotter {
         this.size = size;
     }
 
-
-    public long getX(int count) {
+    long getX(int count) {
         long newX = (long) (svg.getX(count) * factor);
         long x;
         if(count == 0){
@@ -31,7 +30,7 @@ public class Plotter {
         return x;
     }
 
-    public long getY(int count) {
+    long getY(int count) {
         long newY = (long) (svg.getY(count) * factor);
         long y;
         if(count == 0){

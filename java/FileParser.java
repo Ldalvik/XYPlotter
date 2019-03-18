@@ -12,26 +12,30 @@ class FileParser {
         this.data = data.trim();
     }
 
-
+    //Get boundary of request, seperates the form data (file name, file contents, file directory)
     private String getBoundary(){
         return data.split("\n")[0];
     }
 
+    //Gets file name
     String getFileName(){
         String a = Utils.removeTillWord(data, "filename=\"");
         return Utils.removeAllAfter(a, "\"");
     }
 
+    //Gets file content
     String getContent(){
         String a = Utils.removeTillWord(data, svg);
         return Utils.removeAllAfter(a, getBoundary()).trim();
     }
 
+    //Gets file directory
     String getDirectory(){
         String a = Utils.removeTillWord(data, "name=\"path\"");
         return Utils.removeAllAfter(a, getBoundary()).trim();
     }
 
+    //Saves file
     void saveFile(String fileDirectory, String fileContents) throws IOException {
         try (Writer writer = new BufferedWriter(new OutputStreamWriter(
                 new FileOutputStream(fileDirectory), StandardCharsets.UTF_8))) {
