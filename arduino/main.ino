@@ -4,8 +4,8 @@ uint8_t dirY;
 #define NEG LOW
 String content = "";
 int CAN_TAP = true;
-int X_SPEED = 100;
-int Y_SPEED = 100;
+int X_SPEED = 70;
+int Y_SPEED = 70;
 int HOME_SPEED = 50;
 int TAP_DELAY = 30;
 int TAP_ONE = 1;
@@ -21,6 +21,9 @@ boolean DEBUG = false;
 #define TAP_LIMIT 6
 #define Y_LIMIT 7
 #define X_LIMIT 5
+#define SCROLL_P 3
+#define SCROLL_G 2
+#define SENSOR A0
 long xsize;
 long ysize;
 
@@ -34,11 +37,16 @@ void setup() {
   pinMode(TAP_LIMIT, INPUT);
   pinMode(Y_LIMIT, INPUT);
   pinMode(X_LIMIT, INPUT);
+  pinMode(SCROLL_P, OUTPUT);
+  pinMode(SCROLL_G, OUTPUT);
+  pinMode(SENSOR, INPUT);
   Serial.begin(115200);
-  homePen();
+  //homePen();
+ 
 }
 
 void loop() {
+  nextImage();
   if (Serial.available()) {
     char data = (char) Serial.read();
     if (data == '/') {
@@ -54,10 +62,24 @@ void loop() {
       if (content.startsWith("MANUAL:")) {
         manual(content);
       }
+      if (content.equals("SCROLL")) {
+        nextImage();
+      }
       content = "";
     } else {
       content.concat(data);
     }
+  }
+}
+
+void nextImage() {  
+  Serial.println(analogRead(SENSOR));
+  if(analogRead(SENSOR) > 200){
+    digitalWrite(SCROLL_P, LOW);
+    digitalWrite(SCROLL_G, HIGH);
+  } else {
+    digitalWrite(SCROLL_P, LOW);
+    digitalWrite(SCROLL_G, LOW);
   }
 }
 
@@ -121,10 +143,10 @@ void settings(String data) {
   data.remove(0, 5);
   int xspeed = getValue(data, ',', 0).toInt();
   int yspeed = getValue(data, ',', 1).toInt();
-  
+
   int homespeed = getValue(data, ',', 2).toInt();
   int tapdelay = getValue(data, ',', 3).toInt();
-  
+
   X_SPEED = xspeed;
   Y_SPEED = yspeed;
   HOME_SPEED = homespeed;
