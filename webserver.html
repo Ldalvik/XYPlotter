@@ -1,24 +1,126 @@
+<style>
+    .myButton {
+        box-shadow:inset 0px -2px 18px 9px #29bbff;
+        background:linear-gradient(to bottom, #2dabf9 5%, #0688fa 100%);
+        background-color:#2dabf9;
+        border-radius:3px;
+        border:1px solid #0b0e07;
+        display:inline-block;
+        cursor:pointer;
+        color:#ffffff;
+        font-family:Arial;
+        font-size:15px;
+        padding:7px 19px;
+        text-decoration:none;
+        text-shadow:2px 1px 2px #263666;
+    }
+    .myButton:hover {
+        background:linear-gradient(to bottom, #0688fa 5%, #2dabf9 100%);
+        background-color:#0688fa;
+    }
+    .myButton:active {
+        position:relative;
+        top:1px;
+    }
+    .myInput {
+        box-shadow:inset 0px -2px 18px 9px #29bbff;
+        background:linear-gradient(to bottom, #2dabf9 5%, #0688fa 100%);
+        background-color:#2dabf9;
+        border-radius:3px;
+        border:1px solid #0b0e07;
+        display:inline-block;
+        cursor:pointer;
+        color:#ffffff;
+        font-family:Arial;
+        font-size:15px;
+        padding:7px 19px;
+        text-decoration:none;
+        text-shadow:2px 1px 2px #263666;
+    }
+</style>
+
 <center>
     <form enctype="multipart/form-data" action="/upload/" method="post">
-    <input name="uploadFile" type="file"><br>
-    <input type="text" name="path" value="/directory/"><br>
-    <input type="submit" value="Upload" name="uploadButton">
-</form>
-<br><br>
-<button onclick="start()">Start</button>
-<br><br>
-<button id="up">Up</button>
-<button id="down">Down</button>
-<br>
-<button id="left">Left</button>
-<button id="right">Right</button>
-<br><br>
-<button id="tap">Tap</button>
+        <input class="myButton" name="uploadFile" type="file"><br>
+        <input class="myInput" type="text" name="path" value="/home/pi/"><br>
+        <input class="myButton" type="submit" value="Upload" name="uploadButton">
+    </form>
+    <br><br>
+    <input class="myInput" type="text" id="svg_size" value="24000"><br>
+    <br><br>
+    <button class="myButton" onclick="start()">Start</button>
+    <button class="myButton" onclick="stop()">Stop</button><br><br><br>
+
+    <button class="myButton" id="up">Up</button><br>
+    <button class="myButton" id="left">Left</button>
+    <button class="myButton" id="right">Right</button><br>
+    <button class="myButton" id="down">Down</button><br><br><br>
+
+    <button class="myButton" id="tap">Tap</button>
+    <button class="myButton" onclick="box()">Box</button>
+    <button class="myButton" onclick="nextImage()">Next image</button><br>
+    <button class="myButton" onclick="home()">Home</button><br>
+    <button class="myButton" onclick="scr()">Scroll</button>
+    <button class="myButton" onclick="stopScroll()">Stop Scroll</button>
+    <p id="status">Waiting...</p>
 </center>
+
 <script>
-    var data = new Array();
+    var data = [];
     var interval;
     var url_params;
+    //var HOST_IP = '10.1.41.105';
+    var HOST_IP = 'localhost';
+
+    document.onkeydown = function(e) {
+        switch (e.keyCode) {
+            case 37:
+                document.getElementById("status").innerHTML="left";
+                interval = setInterval(function () { moveLeft(); }, 5);
+                break;
+            case 38:
+                document.getElementById("status").innerHTML="up";
+                interval = setInterval(function () { moveUp(); }, 5);
+                break;
+            case 39:
+                document.getElementById("status").innerHTML="right";
+                interval = setInterval(function () { moveRight(); }, 5);
+                break;
+            case 40:
+                document.getElementById("status").innerHTML="down";
+                interval = setInterval(function () { moveDown(); }, 5);
+                break;
+            case 32:
+                document.getElementById("status").innerHTML="tap";
+                interval = setInterval(function () { tap(); }, 5);
+                break;
+        }
+    };
+
+    document.onkeyup = function(e) {
+        switch (e.keyCode) {
+            case 37:
+                document.getElementById("status").innerHTML="Waiting...";
+                clearInterval(interval);
+                break;
+            case 38:
+                document.getElementById("status").innerHTML="Waiting...";
+                clearInterval(interval);
+                break;
+            case 39:
+                document.getElementById("status").innerHTML="Waiting...";
+                clearInterval(interval);
+                break;
+            case 40:
+                document.getElementById("status").innerHTML="Waiting...";
+                clearInterval(interval);
+                break;
+            case 32:
+                document.getElementById("status").innerHTML="Waiting...";
+                clearInterval(interval);
+                break;
+        }
+    };
 
     document.getElementById("left").onmousedown = function () {
         interval = setInterval(function () {
@@ -72,25 +174,40 @@
     }
 
     function moveUp() {
-        getRequest('http://10.1.41.85:8080/up/');
+        getRequest('http://' + HOST_IP + ':8080/up/');
     }
 
     function moveDown() {
-        getRequest('http://10.1.41.85:8080/down/');
+        getRequest('http://' + HOST_IP + ':8080/down/');
     }
 
     function moveLeft() {
-        getRequest('http://10.1.41.85:8080/left/');
+        getRequest('http://' + HOST_IP + ':8080/left/');
     }
 
     function moveRight() {
-        getRequest('http://10.1.41.85:8080/right/');
+        getRequest('http://' + HOST_IP + ':8080/right/');
     }
 
     function tap() {
-        getRequest('http://10.1.41.85:8080/tap/');
+        getRequest('http://' + HOST_IP + ':8080/tap/');
     }
 
+    function nextImage() {
+        getRequest('http://' + HOST_IP + ':8080/nextimage/');
+    }
+
+    function home() {
+        getRequest('http://' + HOST_IP + ':8080/home/');
+    }
+
+    function scr() {
+        getRequest('http://' + HOST_IP + ':8080/scr/');
+    }
+
+    function stopScroll() {
+        getRequest('http://' + HOST_IP + ':8080/stopscroll/');
+    }
     function save() {
         var xs = document.getElementById('xspeed').value;
         var ys = document.getElementById('yspeed').value;
@@ -105,10 +222,19 @@
             file_name: fn
         };
         url_params = '?x_speed=' + data[0].x_speed + '&y_speed=' + data[0].y_speed + '&home_speed=' + data[0].home_speed + '&tap_delay=' + data[0].tap_delay + '&file_name=' + data[0].file_name;
-        getRequest('http://10.1.41.85:8080/save/' + url_params);
+        getRequest('http://' + HOST_IP + ':8080/save/' + url_params);
     }
 
     function start() {
-        getRequest('http://10.1.41.85:8080/start/?file_name=' + data[0].file_name);
+        var svg_size = document.getElementById('svg_size').value;
+        getRequest('http://' + HOST_IP + ':8080/start/?svg_size=' + svg_size);
+    }
+
+    function box() {
+        getRequest('http://' + HOST_IP + ':8080/box/');
+    }
+
+    function stop() {
+        getRequest('http://' + HOST_IP + ':8080/stop/');
     }
 </script>
