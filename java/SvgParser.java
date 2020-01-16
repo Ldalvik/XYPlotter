@@ -10,6 +10,7 @@ import org.w3c.dom.NodeList;
 import org.w3c.dom.Node;
 import org.w3c.dom.Element;
 
+//Parse SVG file
 class SvgParser {
     private long[] xCoords;
     private long[] yCoords;
@@ -18,14 +19,17 @@ class SvgParser {
 
     SvgParser(String fileName) {
         try {
+            //Parse and seperate nodes
             File svg = new File(fileName);
             DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
             Document d = dbf.newDocumentBuilder().parse(svg);
             d.getDocumentElement().normalize();
             NodeList list = d.getElementsByTagName("circle");
+            //Set coordinate lists
             xCoordsSorted = new long[list.getLength()];
             yCoordsSorted = new long[list.getLength()];
 
+            //Fill lists with X/Y coordinates
             for (int i = 0; i < list.getLength(); i++) {
                 Node node = list.item(i);
                 if (node.getNodeType() == Node.ELEMENT_NODE) {
@@ -34,13 +38,13 @@ class SvgParser {
                     yCoordsSorted[i] = (long) (Float.valueOf(e.getAttribute("cy")) * 1000000);
                 }
             }
+            //Sort from lowest to highest
             Arrays.sort(xCoordsSorted);
             Arrays.sort(yCoordsSorted);
-
             xCoords = new long[list.getLength()];
             yCoords = new long[list.getLength()];
             int[][] sortedCoords = new int[list.getLength()][2];
-
+            //Sort coordinates and subtract from the lowest to "start" at (0,0)
             for (int i = 0; i < list.getLength(); i++) {
                 Node node = list.item(i);
                 if (node.getNodeType() == Node.ELEMENT_NODE) {

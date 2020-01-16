@@ -1,16 +1,16 @@
 package plotter;
 
 public class Plotter {
-    private long currentX = 0;
-    private long currentY = 0;
-    private float size;
-    private float factor = 1f;
-    private long lowestY;
-    private long highestY;
-    private long lowestX;
-    private long highestX;
-    private float xSize;
-    private float ySize;
+    public long currentX = 0;
+    public long currentY = 0;
+    public float size;
+    public float factor = 1f;
+    public long lowestY;
+    public long highestY;
+    public long lowestX;
+    public long highestX;
+    public float xSize;
+    public float ySize;
     private SvgParser svg;
 
     Plotter(SvgParser svg, float size) {
@@ -18,6 +18,8 @@ public class Plotter {
         this.size = size;
     }
 
+    //Muliplies coordinates by factor (size of image, max 24000)
+    //Gets difference of last coordinate and current coordinate to find next position
     long getX(int count) {
         long newX = (long) (svg.getX(count) * factor);
         long x;
@@ -50,6 +52,7 @@ public class Plotter {
         return (long) (svg.getY(0) * factor);
     }
 
+    //Calculations to get highest/lowest coordinates to adjust size and position accordingly
     void calculate() {
         lowestX = svg.getLowestX();
         highestX =  svg.getHighestX();
@@ -84,6 +87,7 @@ public class Plotter {
         xSize = highestX - lowestX;
         ySize = highestY - lowestY;
     }
+
     @Override
     public String toString(){
         return "Length: " + svg.getLength() +
@@ -94,7 +98,7 @@ public class Plotter {
        "\nX Size: " + xSize +
        "\nY Size: " + ySize +
        "\nFactor: " + factor +
-       "\nStart X: " + getStartY() +
-       "\nStart Y: " + getStartX();
+       "\nStart X: " + getStartX() +
+       "\nStart Y: " + getStartY();
     }
 }
