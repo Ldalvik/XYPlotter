@@ -1,13 +1,15 @@
+#include <QTRSensors.h>
 uint8_t dirX;
 uint8_t dirY;
 #define POS HIGH
 #define NEG LOW
+#define SCROLL 4
 String content = "";
 int CAN_TAP = true;
 int X_SPEED = 70;
 int Y_SPEED = 70;
 int HOME_SPEED = 50;
-int TAP_DELAY = 30;
+int TAP_DELAY = 35;
 int TAP_ONE = 1;
 int TAP_TWO = 0;
 boolean DEBUG = false;
@@ -21,11 +23,14 @@ boolean DEBUG = false;
 #define TAP_LIMIT 6
 #define Y_LIMIT 7
 #define X_LIMIT 5
-#define SCROLL_P 3
-#define SCROLL_G 2
 #define SENSOR A0
 long xsize;
 long ysize;
+
+QTRSensors qtr;
+
+const uint8_t SensorCount = 1;
+uint16_t sensorValues[SensorCount];
 
 void setup() {
   pinMode(Y_STEP, OUTPUT);
@@ -37,21 +42,44 @@ void setup() {
   pinMode(TAP_LIMIT, INPUT);
   pinMode(Y_LIMIT, INPUT);
   pinMode(X_LIMIT, INPUT);
-  pinMode(SCROLL_P, OUTPUT);
-  pinMode(SCROLL_G, OUTPUT);
+  pinMode(SCROLL, OUTPUT);
   pinMode(SENSOR, INPUT);
   Serial.begin(115200);
-  //homePen();
- 
+  qtr.setTypeRC();
+  qtr.setSensorPins((const uint8_t[]) {
+    3
+  }, SensorCount);
+  qtr.setEmitterPin(2);
+
+  delay(500);
+  pinMode(LED_BUILTIN, OUTPUT);
+  digitalWrite(LED_BUILTIN, HIGH); // turn on Arduino's LED to indicate we are in calibration mode
+
+  for (uint16_t i = 0; i < 50; i++) {
+    qtr.calibrate();
+  }
+
+  digitalWrite(LED_BUILTIN, LOW);
+
+  qtr.calibrationOn.minimum[0] = 0;
+  qtr.calibrationOn.maximum[0] = 500;
+
 }
 
 void loop() {
-  nextImage();
+  //qtr.read(sensorValues);
+  //Serial.println(sensorValues[0]);
   if (Serial.available()) {
     char data = (char) Serial.read();
     if (data == '/') {
       if (content.equals("tap")) {
         tap();
+      }
+      if (content.equals("home")) {
+        homePen();
+      }
+      if (content.equals("box")) {
+        box();
       }
       if (content.startsWith("EDIT:")) {
         settings(content);
@@ -62,8 +90,14 @@ void loop() {
       if (content.startsWith("MANUAL:")) {
         manual(content);
       }
-      if (content.equals("SCROLL")) {
+      if (content.equals("nextimage")) {
         nextImage();
+      }
+      if (content.equals("scroll")) {
+        scroll();
+      }
+      if (content.equals("stopscroll")) {
+        stopScroll();
       }
       content = "";
     } else {
@@ -72,15 +106,22 @@ void loop() {
   }
 }
 
-void nextImage() {  
-  Serial.println(analogRead(SENSOR));
-  if(analogRead(SENSOR) > 200){
-    digitalWrite(SCROLL_P, LOW);
-    digitalWrite(SCROLL_G, HIGH);
-  } else {
-    digitalWrite(SCROLL_P, LOW);
-    digitalWrite(SCROLL_G, LOW);
-  }
+void nextImage() {
+  digitalWrite(SCROLL, HIGH);
+  do {
+    qtr.read(sensorValues);
+    //Serial.println(sensorValues[0]);
+  } while (sensorValues[0] < 500);
+  digitalWrite(SCROLL, LOW);
+  Serial.println("STOP");
+}
+
+void scroll() {
+  digitalWrite(SCROLL, HIGH);
+}
+
+void stopScroll() {
+  digitalWrite(SCROLL, LOW);
 }
 
 void moveX(int dir, int frequency) {
@@ -110,19 +151,54 @@ void homePen() {
 
   do {
     if (digitalRead(X_LIMIT) == LOW) {
+      moveX(0, 40);
+    }
+    if (digitalRead(Y_LIMIT) == LOW) {
+      moveY(0, 40);
+    }
+  } while (digitalRead(Y_LIMIT) == LOW || digitalRead(X_LIMIT) == LOW);
+
+  for (int i = 0; i < 27000; i++) {
+    moveX(1, HOME_SPEED);
+  }
+}
+
+void check() {
+  do {
+    if (digitalRead(X_LIMIT) == LOW) {
       moveX(0, HOME_SPEED);
     }
     if (digitalRead(Y_LIMIT) == LOW) {
       moveY(0, HOME_SPEED);
     }
   } while (digitalRead(Y_LIMIT) == LOW || digitalRead(X_LIMIT) == LOW);
-
-  for (int i = 0; i < 24500; i++) {
-    moveX(1, HOME_SPEED);
+  for (int i = 0; i < 28500; i++) {
+    moveY(1, HOME_SPEED);
   }
+  //box();
 }
 
 void tap() {
+  digitalWrite(TAP_DIR, TAP_ONE);
+
+  do {
+    digitalWrite(TAP_STEP, HIGH);
+    delayMicroseconds(TAP_DELAY);
+    digitalWrite(TAP_STEP, LOW);
+    delayMicroseconds(TAP_DELAY);
+  } while (digitalRead(TAP_LIMIT) == HIGH);
+
+  digitalWrite(TAP_DIR, TAP_TWO);
+
+  for (int i = 0; i < 240; i++) {
+    digitalWrite(TAP_STEP, HIGH);
+    delayMicroseconds(TAP_DELAY);
+    digitalWrite(TAP_STEP, LOW);
+    delayMicroseconds(TAP_DELAY);
+  }
+}
+
+void tapDown() {
   digitalWrite(TAP_DIR, TAP_ONE);
   do {
     digitalWrite(TAP_STEP, HIGH);
@@ -130,6 +206,9 @@ void tap() {
     digitalWrite(TAP_STEP, LOW);
     delayMicroseconds(TAP_DELAY);
   } while (digitalRead(TAP_LIMIT) == HIGH);
+}
+
+void tapUp() {
   digitalWrite(TAP_DIR, TAP_TWO);
   for (int i = 0; i < 200; i++) {
     digitalWrite(TAP_STEP, HIGH);
@@ -137,6 +216,49 @@ void tap() {
     digitalWrite(TAP_STEP, LOW);
     delayMicroseconds(TAP_DELAY);
   }
+}
+
+void box() {
+  homePen();
+  for (int i = 0; i < 29000; i++) {
+    moveY(1, 40);
+  }
+  for (int i = 0; i < 23000; i++) {
+    moveX(0, 40);
+  }
+  tapDown();
+  for (int a = 0; a < 300 ; a++) {
+    for (int x = 0; x < 150; x++) {
+      moveX(0, HOME_SPEED);
+    }
+    for (int x = 0; x < 150; x++) {
+      moveX(1, HOME_SPEED);
+    }
+    moveY(0, HOME_SPEED);
+    moveY(0, HOME_SPEED);
+    moveY(0, HOME_SPEED);
+    moveY(0, HOME_SPEED);
+    moveY(0, HOME_SPEED);
+  }
+  tapUp();
+  do {
+    qtr.read(sensorValues);
+    Serial.println(sensorValues[0]);
+    digitalWrite(SCROLL, HIGH);
+  } while (sensorValues[0] < 600);
+  digitalWrite(SCROLL, LOW);
+  Serial.println("STOP");
+}
+
+void box2() {
+  homePen();
+  do {
+    qtr.read(sensorValues);
+    Serial.println(sensorValues[0]);
+    digitalWrite(SCROLL, HIGH);
+  } while (sensorValues[0] < 600);
+  digitalWrite(SCROLL, LOW);
+  Serial.println("STOP");
 }
 
 void settings(String data) {
